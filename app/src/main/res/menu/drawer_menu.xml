@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:id="@+id/nav_auteurs" android:title="Auteurs"/>
+    <item android:id="@+id/nav_categories" android:title="Catégories"/>
+    <item android:id="@+id/nav_livres" android:title="Livres"/>
+    <item android:id="@+id/nav_membres" android:title="Membres"/>
+    <item android:id="@+id/nav_emprunts" android:title="Emprunts"/>
+
+</menu>

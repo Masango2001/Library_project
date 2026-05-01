@@ -1,3 +1,5 @@
 <resources>
-    <string name="app_name">Bibliotheque</string>
+    <string name="app_name">Bibliothèque</string>
+    <string name="open">Ouvrir menu</string>
+    <string name="close">Fermer menu</string>
 </resources>

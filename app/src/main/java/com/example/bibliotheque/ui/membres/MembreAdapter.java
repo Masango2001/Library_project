@@ -6,52 +6,56 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.DiffUtil;
-import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.bibliotheque.R;
 import com.example.bibliotheque.entities.Membre;
 
-public class MembreAdapter extends ListAdapter<Membre, MembreAdapter.ViewHolder> {
-    public MembreAdapter() {
-        super(DIFF_CALLBACK);
-    }
+import java.util.ArrayList;
+import java.util.List;
 
-    private static final DiffUtil.ItemCallback<Membre> DIFF_CALLBACK =
-            new DiffUtil.ItemCallback<Membre>() {
-                @Override
-                public boolean areItemsTheSame(@NonNull Membre oldItem, @NonNull Membre newItem) {
-                    return oldItem.getId() == newItem.getId();
-                }
+public class MembreAdapter extends RecyclerView.Adapter<MembreAdapter.ViewHolder> {
 
-                @Override
-                public boolean areContentsTheSame(@NonNull Membre oldItem, @NonNull Membre newItem) {
-                    return oldItem.equals(newItem);
-                }
-            };
+    List<Membre> list = new ArrayList<>();
 
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext())
+        View v = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_membre, parent, false);
-        return new ViewHolder(view);
+        return new ViewHolder(v);
     }
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        Membre membre = getItem(position);
-        holder.txtNom.setText(membre.getNomComplet());
-        holder.txtEmail.setText(membre.getEmail());
+
+        Membre m = list.get(position);
+
+        holder.txtNom.setText(m.getNom());
+        holder.txtEmail.setText(m.getEmail());
+        holder.txtStatut.setText(m.getStatut());
     }
-    static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView txtNom, txtEmail;
+
+    @Override
+    public int getItemCount() {
+        return list.size();
+    }
+
+    public void setList(List<Membre> list) {
+        this.list = list;
+        notifyDataSetChanged();
+    }
+
+    public static class ViewHolder extends RecyclerView.ViewHolder {
+
+        TextView txtNom, txtEmail, txtStatut;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
+
             txtNom = itemView.findViewById(R.id.txtNom);
             txtEmail = itemView.findViewById(R.id.txtEmail);
+            txtStatut = itemView.findViewById(R.id.txtStatut);
         }
     }
 }

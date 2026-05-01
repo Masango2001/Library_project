@@ -2,24 +2,50 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Permission réseau (optionnel) -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+
     <application
         android:allowBackup="true"
-        android:dataExtractionRules="@xml/data_extraction_rules"
-        android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Bibliotheque">
+        android:theme="@style/Theme.Bibliotheque"
+        tools:targetApi="31">
+
+        <!-- DASHBOARD (ACTIVITÉ PRINCIPALE) -->
         <activity
             android:name=".MainActivity"
             android:exported="true">
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
         </activity>
+
+        <!-- AUTEURS -->
+        <activity android:name=".ui.auteurs.AuteurActivity" android:exported="false"/>
+        <activity android:name=".ui.auteurs.AddAuteurActivity" android:exported="false"/>
+
+        <!-- CATEGORIES -->
+        <activity android:name=".ui.categories.CategorieActivity" android:exported="false"/>
+        <activity android:name=".ui.categories.AddCategorieActivity" android:exported="false"/>
+
+        <!-- LIVRES -->
+        <activity android:name=".ui.livres.LivreActivity" android:exported="false"/>
+        <activity android:name=".ui.livres.AddLivreActivity" android:exported="false"/>
+
+        <!-- MEMBRES -->
+        <activity android:name=".ui.membres.MembreActivity" android:exported="false"/>
+        <activity android:name=".ui.membres.AddMembreActivity" android:exported="false"/>
+
+        <!-- EMPRUNTS -->
+        <activity android:name=".ui.emprunts.EmpruntActivity" android:exported="false"/>
+        <activity android:name=".ui.emprunts.AddEmpruntActivity" android:exported="false"/>
+
     </application>
 
 </manifest>

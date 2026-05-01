@@ -1,4 +1,4 @@
-package com.bibliotheque.app.dao;
+package com.example.bibliotheque.dao;
 
 import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
@@ -15,28 +15,26 @@ import java.util.List;
 @Dao
 public interface MembreDao {
 
-    // ── INSERTION ─────────────────────────────
     @Insert(onConflict = OnConflictStrategy.ABORT)
     long insert(Membre membre);
 
-    // ── MISE À JOUR ───────────────────────────
     @Update
     void update(Membre membre);
 
-    // ── SUPPRESSION ───────────────────────────
     @Delete
     void delete(Membre membre);
 
     @Query("DELETE FROM membres WHERE id = :id")
     void deleteById(int id);
 
-    // ── LECTURE ───────────────────────────────
-
     @Query("SELECT * FROM membres ORDER BY nom ASC, prenom ASC")
     LiveData<List<Membre>> getAllMembres();
 
     @Query("SELECT * FROM membres WHERE statut = 'actif' ORDER BY nom ASC")
     LiveData<List<Membre>> getMembresActifs();
+
+    @Query("SELECT * FROM membres WHERE statut = 'suspendu' ORDER BY nom ASC")
+    LiveData<List<Membre>> getMembresSuspendus();
 
     @Query("SELECT * FROM membres WHERE nom LIKE '%' || :recherche || '%' " +
             "OR prenom LIKE '%' || :recherche || '%' ORDER BY nom ASC")
@@ -48,15 +46,14 @@ public interface MembreDao {
     @Query("SELECT * FROM membres WHERE email = :email LIMIT 1")
     LiveData<Membre> getMembreByEmail(String email);
 
-    // ── STATISTIQUES ──────────────────────────
+    @Query("SELECT COUNT(*) FROM membres")
+    LiveData<Integer> countAll();
 
     @Query("SELECT COUNT(*) FROM membres WHERE statut = 'actif'")
     LiveData<Integer> countMembresActifs();
 
-    @Query("SELECT COUNT(*) FROM membres")
-    LiveData<Integer> countAll();
-
-    // ── GESTION STATUT ────────────────────────
+    @Query("SELECT COUNT(*) FROM membres WHERE statut = 'suspendu'")
+    LiveData<Integer> countMembresSuspendus();
 
     @Query("UPDATE membres SET statut = :statut WHERE id = :id")
     void updateStatut(int id, String statut);

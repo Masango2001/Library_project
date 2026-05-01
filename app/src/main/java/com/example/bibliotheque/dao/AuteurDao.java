@@ -10,26 +10,32 @@ import java.util.List;
 @Dao
 public interface AuteurDao {
 
+    // INSERT
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     long insert(Auteur auteur);
 
+    // UPDATE
     @Update
     void update(Auteur auteur);
+
+    // DELETE
     @Delete
     void delete(Auteur auteur);
 
-    @Query("DELETE FROM auteurs WHERE id = :id")
-    void deleteById(int id);
-
+    // READ ALL
     @Query("SELECT * FROM auteurs ORDER BY nom ASC, prenom ASC")
     LiveData<List<Auteur>> getAllAuteurs();
 
+    // READ BY ID
     @Query("SELECT * FROM auteurs WHERE id = :id LIMIT 1")
-    Auteur getAuteurById(int id);
+    LiveData<Auteur> getAuteurById(int id);
 
-    @Query("SELECT * FROM auteurs WHERE nom LIKE '%' || :keyword || '%' OR prenom LIKE '%' || :keyword || '%' ORDER BY nom ASC")
+    // SEARCH
+    @Query("SELECT * FROM auteurs WHERE nom LIKE '%' || :keyword || '%' " +
+            "OR prenom LIKE '%' || :keyword || '%' ORDER BY nom ASC")
     LiveData<List<Auteur>> searchAuteurs(String keyword);
 
+    // STATISTICS
     @Query("SELECT COUNT(*) FROM auteurs")
-    int countAll();
+    LiveData<Integer> countAuteurs();
 }

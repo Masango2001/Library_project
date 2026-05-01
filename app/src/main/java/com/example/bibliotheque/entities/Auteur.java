@@ -8,17 +8,25 @@ public class Auteur {
 
     @PrimaryKey(autoGenerate = true)
     private int id;
+
     private String nom;
     private String prenom;
     private String nationalite;
     private String dateNaissance;
 
+    // Constructeur vide (OBLIGATOIRE recommandé Room)
+    public Auteur() {
+    }
+
+    // Constructeur principal
     public Auteur(String nom, String prenom, String nationalite, String dateNaissance) {
         this.nom = nom;
         this.prenom = prenom;
         this.nationalite = nationalite;
         this.dateNaissance = dateNaissance;
     }
+
+    // Getters et Setters
     public int getId() {
         return id;
     }
@@ -34,6 +42,7 @@ public class Auteur {
     public void setNom(String nom) {
         this.nom = nom;
     }
+
     public String getPrenom() {
         return prenom;
     }
