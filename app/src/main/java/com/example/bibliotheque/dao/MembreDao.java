@@ -43,8 +43,14 @@ public interface MembreDao {
     @Query("SELECT * FROM membres WHERE id = :id LIMIT 1")
     LiveData<Membre> getMembreById(int id);
 
+    @Query("SELECT * FROM membres WHERE id = :id LIMIT 1")
+    Membre getMembreByIdSync(int id);
+
     @Query("SELECT * FROM membres WHERE email = :email LIMIT 1")
     LiveData<Membre> getMembreByEmail(String email);
+
+    @Query("SELECT COUNT(*) FROM membres WHERE email = :email AND id != :excludeId")
+    int countByEmailExcludingId(String email, int excludeId);
 
     @Query("SELECT COUNT(*) FROM membres")
     LiveData<Integer> countAll();

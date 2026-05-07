@@ -25,7 +25,7 @@ import com.example.bibliotheque.entities.Membre;
                 Membre.class,
                 Emprunt.class
         },
-        version = 1,
+        version = 2,
         exportSchema = false
 )
 public abstract class AppDatabase extends RoomDatabase {

@@ -30,6 +30,9 @@ public interface AuteurDao {
     @Query("SELECT * FROM auteurs WHERE id = :id LIMIT 1")
     LiveData<Auteur> getAuteurById(int id);
 
+    @Query("SELECT * FROM auteurs WHERE id = :id LIMIT 1")
+    Auteur getAuteurByIdSync(int id);
+
     // SEARCH
     @Query("SELECT * FROM auteurs WHERE nom LIKE '%' || :keyword || '%' " +
             "OR prenom LIKE '%' || :keyword || '%' ORDER BY nom ASC")
@@ -38,4 +41,7 @@ public interface AuteurDao {
     // STATISTICS
     @Query("SELECT COUNT(*) FROM auteurs")
     LiveData<Integer> countAuteurs();
+
+    @Query("SELECT COUNT(*) FROM auteurs WHERE nom = :nom AND prenom = :prenom AND id != :excludeId")
+    int countByIdentityExcludingId(String nom, String prenom, int excludeId);
 }

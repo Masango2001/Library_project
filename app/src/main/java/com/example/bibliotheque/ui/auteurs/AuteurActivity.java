@@ -6,22 +6,25 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.bibliotheque.R;
+import com.example.bibliotheque.data.AppDatabase;
 import com.example.bibliotheque.entities.Auteur;
 import com.example.bibliotheque.repository.AuteurRepository;
 
-import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 public class AuteurActivity extends AppCompatActivity {
 
-    RecyclerView recyclerView;
-    Button btnAdd;
-
-    AuteurAdapter adapter;
-    AuteurRepository repository;
+    private RecyclerView recyclerView;
+    private Button btnAdd;
+    private AuteurAdapter adapter;
+    private AuteurRepository repository;
+    private AppDatabase db;
+    private ExecutorService executorService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,18 +35,32 @@ public class AuteurActivity extends AppCompatActivity {
         btnAdd = findViewById(R.id.btnAddAuteur);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-
         adapter = new AuteurAdapter();
         recyclerView.setAdapter(adapter);
 
         repository = new AuteurRepository(getApplication());
+        db = AppDatabase.getInstance(this);
+        executorService = Executors.newSingleThreadExecutor();
 
-        // 🔥 Actions Adapter (modifier + supprimer)
         adapter.setListener(new AuteurAdapter.OnItemClickListener() {
             @Override
             public void onDelete(Auteur auteur) {
-                repository.delete(auteur);
-                Toast.makeText(AuteurActivity.this, "Auteur supprimé", Toast.LENGTH_SHORT).show();
+                executorService.execute(() -> {
+                    try {
+                        db.auteurDao().delete(auteur);
+                        runOnUiThread(() -> Toast.makeText(
+                                AuteurActivity.this,
+                                "Auteur supprime",
+                                Toast.LENGTH_SHORT
+                        ).show());
+                    } catch (Exception exception) {
+                        runOnUiThread(() -> Toast.makeText(
+                                AuteurActivity.this,
+                                "Suppression impossible: cet auteur est deja utilise",
+                                Toast.LENGTH_LONG
+                        ).show());
+                    }
+                });
             }
 
             @Override
@@ -53,22 +70,17 @@ public class AuteurActivity extends AppCompatActivity {
                 intent.putExtra("nom", auteur.getNom());
                 intent.putExtra("prenom", auteur.getPrenom());
                 intent.putExtra("nationalite", auteur.getNationalite());
+                intent.putExtra("date_naissance", auteur.getDateNaissance());
                 startActivity(intent);
             }
         });
 
         loadAuteurs();
-
         btnAdd.setOnClickListener(v ->
                 startActivity(new Intent(this, AddAuteurActivity.class)));
     }
 
     private void loadAuteurs() {
-        repository.getAllAuteurs().observe(this, new Observer<List<Auteur>>() {
-            @Override
-            public void onChanged(List<Auteur> auteurs) {
-                adapter.setList(auteurs);
-            }
-        });
+        repository.getAllAuteurs().observe(this, adapter::setList);
     }
 }

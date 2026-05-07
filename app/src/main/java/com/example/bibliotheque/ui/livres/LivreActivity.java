@@ -2,17 +2,28 @@ package com.example.bibliotheque.ui.livres;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
+import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
+import androidx.lifecycle.LiveData;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.bibliotheque.R;
-import com.example.bibliotheque.entities.Livre;
+import com.example.bibliotheque.data.AppDatabase;
+import com.example.bibliotheque.model.LivreCatalogueItem;
 import com.example.bibliotheque.repository.LivreRepository;
 import com.example.bibliotheque.ui.emprunts.AddEmpruntActivity;
+import com.example.bibliotheque.ui.emprunts.EmpruntActivity;
+
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class LivreActivity extends AppCompatActivity {
 
@@ -20,6 +31,9 @@ public class LivreActivity extends AppCompatActivity {
     private Button btnAdd;
     private LivreAdapter adapter;
     private LivreRepository repository;
+    private AppDatabase db;
+    private ExecutorService executorService;
+    private LiveData<List<LivreCatalogueItem>> currentSource;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,39 +48,117 @@ public class LivreActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
 
         repository = new LivreRepository(getApplication());
+        db = AppDatabase.getInstance(this);
+        executorService = Executors.newSingleThreadExecutor();
 
-        adapter.setListener(new LivreAdapter.OnLivreAction() {
-            @Override
-            public void onDelete(Livre livre) {
-                repository.delete(livre);
-                Toast.makeText(LivreActivity.this, "Livre supprimé", Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onUpdate(Livre livre) {
-                // Implementation for update could go here
-                Toast.makeText(LivreActivity.this, "Fonctionnalité de modification à venir", Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onEmprunt(Livre livre) {
-                if (livre.getQuantiteDisponible() > 0) {
-                    Intent intent = new Intent(LivreActivity.this, AddEmpruntActivity.class);
-                    intent.putExtra("LIVRE_ID", livre.getId());
-                    startActivity(intent);
-                } else {
-                    Toast.makeText(LivreActivity.this, "Plus de stock disponible", Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            @Override
-            public void onRetour(Livre livre) {
-                Toast.makeText(LivreActivity.this, "Utilisez l'onglet Emprunts pour les retours", Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        repository.getAllLivres().observe(this, livres -> adapter.setList(livres));
+        setupSearch();
+        setupActions();
+        observeCatalogue(null);
 
         btnAdd.setOnClickListener(v -> startActivity(new Intent(this, AddLivreActivity.class)));
+    }
+
+    private void setupSearch() {
+        LinearLayout root = (LinearLayout) btnAdd.getParent();
+        SearchView searchView = new SearchView(this);
+        searchView.setQueryHint("Rechercher par titre, auteur ou categorie");
+        searchView.setIconifiedByDefault(false);
+
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        );
+        searchView.setLayoutParams(params);
+        root.addView(searchView, 1);
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                observeCatalogue(query);
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                observeCatalogue(newText);
+                return true;
+            }
+        });
+    }
+
+    private void setupActions() {
+        adapter.setListener(new LivreAdapter.OnLivreAction() {
+            @Override
+            public void onDelete(LivreCatalogueItem livre) {
+                executorService.execute(() -> {
+                    try {
+                        db.livreDao().delete(livre.toLivre());
+                        runOnUiThread(() -> Toast.makeText(
+                                LivreActivity.this,
+                                "Livre supprime",
+                                Toast.LENGTH_SHORT
+                        ).show());
+                    } catch (Exception exception) {
+                        runOnUiThread(() -> Toast.makeText(
+                                LivreActivity.this,
+                                "Suppression impossible: ce livre est encore lie a des emprunts",
+                                Toast.LENGTH_LONG
+                        ).show());
+                    }
+                });
+            }
+
+            @Override
+            public void onUpdate(LivreCatalogueItem livre) {
+                Intent intent = new Intent(LivreActivity.this, AddLivreActivity.class);
+                intent.putExtra("id", livre.id);
+                intent.putExtra("titre", livre.titre);
+                intent.putExtra("isbn", livre.isbn);
+                intent.putExtra("annee_publication", livre.anneePublication);
+                intent.putExtra("editeur", livre.editeur);
+                intent.putExtra("categorie_id", livre.categorieId);
+                intent.putExtra("auteur_id", livre.auteurId);
+                intent.putExtra("quantite_totale", livre.quantiteTotale);
+                intent.putExtra("quantite_disponible", livre.quantiteDisponible);
+                startActivity(intent);
+            }
+
+            @Override
+            public void onEmprunt(LivreCatalogueItem livre) {
+                if (livre.quantiteDisponible <= 0) {
+                    Toast.makeText(LivreActivity.this, "Plus de stock disponible", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                Intent intent = new Intent(LivreActivity.this, AddEmpruntActivity.class);
+                intent.putExtra("LIVRE_ID", livre.id);
+                startActivity(intent);
+            }
+
+            @Override
+            public void onRetour(LivreCatalogueItem livre) {
+                Intent intent = new Intent(LivreActivity.this, EmpruntActivity.class);
+                startActivity(intent);
+                Toast.makeText(
+                        LivreActivity.this,
+                        "Selectionnez l'emprunt a retourner dans la liste",
+                        Toast.LENGTH_SHORT
+                ).show();
+            }
+        });
+    }
+
+    private void observeCatalogue(String query) {
+        if (currentSource != null) {
+            currentSource.removeObservers(this);
+        }
+
+        if (TextUtils.isEmpty(query)) {
+            currentSource = repository.getCatalogue();
+        } else {
+            currentSource = repository.searchCatalogue(query.trim());
+        }
+
+        currentSource.observe(this, adapter::setList);
     }
 }

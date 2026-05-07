@@ -35,6 +35,9 @@ public interface CategorieDao {
     @Query("SELECT * FROM categories WHERE id = :id LIMIT 1")
     LiveData<Categorie> getCategorieById(int id);
 
+    @Query("SELECT * FROM categories WHERE id = :id LIMIT 1")
+    Categorie getCategorieByIdSync(int id);
+
     // ================= RECHERCHE =================
     @Query("SELECT * FROM categories " +
             "WHERE nom LIKE '%' || :keyword || '%' " +
@@ -49,6 +52,9 @@ public interface CategorieDao {
     // ================= VERIFICATION =================
     @Query("SELECT COUNT(*) FROM categories WHERE nom = :nom LIMIT 1")
     int existsByName(String nom);
+
+    @Query("SELECT COUNT(*) FROM categories WHERE nom = :nom AND id != :excludeId LIMIT 1")
+    int existsByNameExcludingId(String nom, int excludeId);
 
     // ================= SUPPRESSION PAR ID =================
     @Query("DELETE FROM categories WHERE id = :id")

@@ -7,6 +7,7 @@ import androidx.lifecycle.LiveData;
 import com.example.bibliotheque.dao.LivreDao;
 import com.example.bibliotheque.data.AppDatabase;
 import com.example.bibliotheque.entities.Livre;
+import com.example.bibliotheque.model.LivreCatalogueItem;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -31,6 +32,14 @@ public class LivreRepository {
         return allLivres;
     }
 
+    public LiveData<List<Livre>> getLivresDisponibles() {
+        return livreDao.getLivresDisponibles();
+    }
+
+    public LiveData<List<LivreCatalogueItem>> getCatalogue() {
+        return livreDao.getCatalogue();
+    }
+
     public void insert(Livre l) {
         executor.execute(() -> livreDao.insert(l));
     }
@@ -48,6 +57,10 @@ public class LivreRepository {
     // ================= SEARCH =================
     public LiveData<List<Livre>> searchLivres(String query) {
         return livreDao.searchLivres(query);
+    }
+
+    public LiveData<List<LivreCatalogueItem>> searchCatalogue(String query) {
+        return livreDao.searchCatalogue(query);
     }
 
     // ================= FILTRES =================

@@ -23,6 +23,7 @@ public class MembreRepository {
 
     public LiveData<List<Membre>> getAllMembres() { return allMembres; }
     public LiveData<List<Membre>> getMembresActifs() { return membreDao.getMembresActifs(); }
+    public LiveData<List<Membre>> searchMembres(String recherche) { return membreDao.searchMembres(recherche); }
     public LiveData<Membre> getMembreById(int id) { return membreDao.getMembreById(id); }
 
     public void insert(Membre membre) {
@@ -44,4 +45,5 @@ public class MembreRepository {
 
     public LiveData<Integer> countAll() { return membreDao.countAll(); }
     public LiveData<Integer> countMembresActifs() { return membreDao.countMembresActifs(); }
+    public LiveData<Integer> countMembresSuspendus() { return membreDao.countMembresSuspendus(); }
 }

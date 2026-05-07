@@ -4,123 +4,188 @@ import android.os.Bundle;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.bibliotheque.R;
+import com.example.bibliotheque.data.AppDatabase;
 import com.example.bibliotheque.entities.Emprunt;
 import com.example.bibliotheque.entities.Livre;
 import com.example.bibliotheque.entities.Membre;
-import com.example.bibliotheque.repository.EmpruntRepository;
 import com.example.bibliotheque.repository.LivreRepository;
 import com.example.bibliotheque.repository.MembreRepository;
+import com.example.bibliotheque.util.DateUtils;
+import com.example.bibliotheque.util.LibraryConstants;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class AddEmpruntActivity extends AppCompatActivity {
 
-    private Spinner spinnerMembre, spinnerLivre;
+    private Spinner spinnerMembre;
+    private Spinner spinnerLivre;
+    private TextView txtDateRetour;
     private Button btnSave;
-
-    private EmpruntRepository empruntRepository;
     private MembreRepository membreRepository;
     private LivreRepository livreRepository;
-
+    private AppDatabase db;
+    private ExecutorService executorService;
     private List<Membre> membreList = new ArrayList<>();
     private List<Livre> livreList = new ArrayList<>();
+    private int preselectedLivreId = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_emprunt);
 
-        // Correction des IDs pour correspondre au layout XML (Spinners au lieu d'EditText)
         spinnerMembre = findViewById(R.id.spinnerMembre);
         spinnerLivre = findViewById(R.id.spinnerLivre);
+        txtDateRetour = findViewById(R.id.txtDateRetour);
         btnSave = findViewById(R.id.btnSave);
 
-        empruntRepository = new EmpruntRepository(getApplication());
         membreRepository = new MembreRepository(getApplication());
         livreRepository = new LivreRepository(getApplication());
+        db = AppDatabase.getInstance(this);
+        executorService = Executors.newSingleThreadExecutor();
+        preselectedLivreId = getIntent().getIntExtra("LIVRE_ID", -1);
+
+        long dateRetour = DateUtils.addDays(
+                System.currentTimeMillis(),
+                LibraryConstants.DUREE_EMPRUNT_JOURS
+        );
+        txtDateRetour.setText("Date de retour prevue : " + DateUtils.formatDate(dateRetour));
 
         loadSpinners();
-
         btnSave.setOnClickListener(v -> saveEmprunt());
     }
 
     private void loadSpinners() {
-        // Charger les membres actifs
         membreRepository.getMembresActifs().observe(this, membres -> {
-            if (membres != null) {
-                membreList = membres;
-                List<String> names = new ArrayList<>();
-                for (Membre m : membres) {
-                    names.add(m.getNom() + " " + m.getPrenom());
-                }
-                ArrayAdapter<String> adapter = new ArrayAdapter<>(this, 
-                        android.R.layout.simple_spinner_dropdown_item, names);
-                spinnerMembre.setAdapter(adapter);
+            if (membres == null) {
+                return;
             }
+
+            membreList = membres;
+            List<String> names = new ArrayList<>();
+            for (Membre membre : membres) {
+                names.add(membre.getNom() + " " + membre.getPrenom());
+            }
+
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                    this,
+                    android.R.layout.simple_spinner_dropdown_item,
+                    names
+            );
+            spinnerMembre.setAdapter(adapter);
         });
 
-        // Charger les livres
-        livreRepository.getAllLivres().observe(this, livres -> {
-            if (livres != null) {
-                livreList = livres;
-                List<String> titles = new ArrayList<>();
-                for (Livre l : livres) {
-                    titles.add(l.getTitre() + " (" + l.getQuantiteDisponible() + " dispo)");
-                }
-                ArrayAdapter<String> adapter = new ArrayAdapter<>(this, 
-                        android.R.layout.simple_spinner_dropdown_item, titles);
-                spinnerLivre.setAdapter(adapter);
+        livreRepository.getLivresDisponibles().observe(this, livres -> {
+            if (livres == null) {
+                return;
+            }
+
+            livreList = livres;
+            List<String> titles = new ArrayList<>();
+            for (Livre livre : livres) {
+                titles.add(livre.getTitre() + " (" + livre.getQuantiteDisponible() + " dispo)");
+            }
+
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                    this,
+                    android.R.layout.simple_spinner_dropdown_item,
+                    titles
+            );
+            spinnerLivre.setAdapter(adapter);
+
+            if (preselectedLivreId != -1) {
+                spinnerLivre.setSelection(findLivrePosition(preselectedLivreId));
             }
         });
     }
 
+    private int findLivrePosition(int livreId) {
+        for (int index = 0; index < livreList.size(); index++) {
+            if (livreList.get(index).getId() == livreId) {
+                return index;
+            }
+        }
+        return 0;
+    }
+
     private void saveEmprunt() {
         if (membreList.isEmpty() || livreList.isEmpty()) {
-            Toast.makeText(this, "Sélectionnez un membre et un livre", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Selectionnez un membre et un livre", Toast.LENGTH_SHORT).show();
             return;
         }
 
         int membrePos = spinnerMembre.getSelectedItemPosition();
         int livrePos = spinnerLivre.getSelectedItemPosition();
-
         if (membrePos < 0 || livrePos < 0) {
-            Toast.makeText(this, "Sélection invalide", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Selection invalide", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        Membre selectedMembre = membreList.get(membrePos);
-        Livre selectedLivre = livreList.get(livrePos);
+        Membre membreSelectionne = membreList.get(membrePos);
+        Livre livreSelectionne = livreList.get(livrePos);
 
-        if (selectedLivre.getQuantiteDisponible() <= 0) {
-            Toast.makeText(this, "Ce livre n'est plus disponible", Toast.LENGTH_SHORT).show();
-            return;
-        }
+        executorService.execute(() -> {
+            Membre membre = db.membreDao().getMembreByIdSync(membreSelectionne.getId());
+            Livre livre = db.livreDao().getLivreByIdSync(livreSelectionne.getId());
 
-        long now = System.currentTimeMillis();
-        long retourPrevu = now + (7L * 24 * 60 * 60 * 1000); // +7 jours
+            if (membre == null || !LibraryConstants.STATUT_MEMBRE_ACTIF.equalsIgnoreCase(membre.getStatut())) {
+                runOnUiThread(() -> Toast.makeText(
+                        this,
+                        "Ce membre ne peut pas emprunter",
+                        Toast.LENGTH_SHORT
+                ).show());
+                return;
+            }
 
-        Emprunt e = new Emprunt(
-                selectedMembre.getId(),
-                selectedLivre.getId(),
-                now,
-                retourPrevu,
-                0,
-                "EN_COURS"
-        );
+            if (livre == null || livre.getQuantiteDisponible() <= 0) {
+                runOnUiThread(() -> Toast.makeText(
+                        this,
+                        "Ce livre n'est plus disponible",
+                        Toast.LENGTH_SHORT
+                ).show());
+                return;
+            }
 
-        empruntRepository.insert(e);
+            long now = System.currentTimeMillis();
+            long retourPrevu = DateUtils.addDays(now, LibraryConstants.DUREE_EMPRUNT_JOURS);
 
-        // Mettre à jour le stock du livre
-        selectedLivre.setQuantiteDisponible(selectedLivre.getQuantiteDisponible() - 1);
-        livreRepository.update(selectedLivre);
+            try {
+                db.runInTransaction(() -> {
+                    if (db.livreDao().decrementStock(livre.getId()) == 0) {
+                        throw new IllegalStateException("Stock indisponible");
+                    }
 
-        Toast.makeText(this, "Emprunt enregistré", Toast.LENGTH_SHORT).show();
-        finish();
+                    Emprunt emprunt = new Emprunt(
+                            membre.getId(),
+                            livre.getId(),
+                            now,
+                            retourPrevu,
+                            0,
+                            LibraryConstants.STATUT_EMPRUNT_EN_COURS
+                    );
+                    db.empruntDao().insert(emprunt);
+                });
+
+                runOnUiThread(() -> {
+                    Toast.makeText(this, "Emprunt enregistre", Toast.LENGTH_SHORT).show();
+                    finish();
+                });
+            } catch (Exception exception) {
+                runOnUiThread(() -> Toast.makeText(
+                        this,
+                        "Impossible d'enregistrer l'emprunt",
+                        Toast.LENGTH_SHORT
+                ).show());
+            }
+        });
     }
 }

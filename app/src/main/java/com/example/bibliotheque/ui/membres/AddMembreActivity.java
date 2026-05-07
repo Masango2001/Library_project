@@ -11,19 +11,29 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.bibliotheque.R;
+import com.example.bibliotheque.data.AppDatabase;
 import com.example.bibliotheque.entities.Membre;
-import com.example.bibliotheque.repository.MembreRepository;
+import com.example.bibliotheque.util.LibraryConstants;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class AddMembreActivity extends AppCompatActivity {
 
-    private EditText edtNom, edtPrenom, edtEmail, edtTelephone, edtAdresse;
+    private EditText edtNom;
+    private EditText edtPrenom;
+    private EditText edtEmail;
+    private EditText edtTelephone;
+    private EditText edtAdresse;
     private Spinner spinnerStatut;
     private Button btnSave;
-    private MembreRepository repository;
+    private AppDatabase db;
+    private ExecutorService executorService;
+    private int membreId = -1;
+    private String dateInscriptionExistante;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,17 +48,47 @@ public class AddMembreActivity extends AppCompatActivity {
         spinnerStatut = findViewById(R.id.spinnerStatut);
         btnSave = findViewById(R.id.btnSave);
 
-        repository = new MembreRepository(getApplication());
+        db = AppDatabase.getInstance(this);
+        executorService = Executors.newSingleThreadExecutor();
 
         setupSpinner();
+        loadEditMode();
 
         btnSave.setOnClickListener(v -> saveMembre());
     }
 
     private void setupSpinner() {
-        String[] statuts = {"actif", "suspendu"};
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, statuts);
+        String[] statuts = {
+                LibraryConstants.STATUT_MEMBRE_ACTIF,
+                LibraryConstants.STATUT_MEMBRE_SUSPENDU
+        };
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                this,
+                android.R.layout.simple_spinner_dropdown_item,
+                statuts
+        );
         spinnerStatut.setAdapter(adapter);
+    }
+
+    private void loadEditMode() {
+        if (!getIntent().hasExtra("id")) {
+            return;
+        }
+
+        membreId = getIntent().getIntExtra("id", -1);
+        edtNom.setText(getIntent().getStringExtra("nom"));
+        edtPrenom.setText(getIntent().getStringExtra("prenom"));
+        edtEmail.setText(getIntent().getStringExtra("email"));
+        edtTelephone.setText(getIntent().getStringExtra("telephone"));
+        edtAdresse.setText(getIntent().getStringExtra("adresse"));
+        dateInscriptionExistante = getIntent().getStringExtra("date_inscription");
+
+        String statut = getIntent().getStringExtra("statut");
+        if (LibraryConstants.STATUT_MEMBRE_SUSPENDU.equals(statut)) {
+            spinnerStatut.setSelection(1);
+        }
+
+        setTitle("Modifier membre");
     }
 
     private void saveMembre() {
@@ -59,17 +99,49 @@ public class AddMembreActivity extends AppCompatActivity {
         String adresse = edtAdresse.getText().toString().trim();
         String statut = spinnerStatut.getSelectedItem().toString();
 
-        if (TextUtils.isEmpty(nom) || TextUtils.isEmpty(email)) {
-            Toast.makeText(this, "Veuillez remplir le nom et l'email", Toast.LENGTH_SHORT).show();
+        if (TextUtils.isEmpty(nom) || TextUtils.isEmpty(prenom) || TextUtils.isEmpty(email)) {
+            Toast.makeText(this, "Nom, prenom et email sont obligatoires", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        String dateInscription = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(new Date());
+        String dateInscription = dateInscriptionExistante;
+        if (TextUtils.isEmpty(dateInscription)) {
+            dateInscription = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                    .format(new Date());
+        }
 
-        Membre membre = new Membre(nom, prenom, email, telephone, adresse, dateInscription, statut);
-        repository.insert(membre);
+        String finalDateInscription = dateInscription;
+        executorService.execute(() -> {
+            if (db.membreDao().countByEmailExcludingId(email, membreId) > 0) {
+                runOnUiThread(() -> Toast.makeText(
+                        this,
+                        "Cet email est deja utilise",
+                        Toast.LENGTH_SHORT
+                ).show());
+                return;
+            }
 
-        Toast.makeText(this, "Membre enregistré", Toast.LENGTH_SHORT).show();
-        finish();
+            Membre membre = new Membre(
+                    nom,
+                    prenom,
+                    email,
+                    telephone,
+                    adresse,
+                    finalDateInscription,
+                    statut
+            );
+
+            if (membreId == -1) {
+                db.membreDao().insert(membre);
+            } else {
+                membre.setId(membreId);
+                db.membreDao().update(membre);
+            }
+
+            runOnUiThread(() -> {
+                Toast.makeText(this, "Membre enregistre", Toast.LENGTH_SHORT).show();
+                finish();
+            });
+        });
     }
 }

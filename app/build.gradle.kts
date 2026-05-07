@@ -40,6 +40,7 @@ dependencies {
     implementation(libs.material)
     implementation(libs.activity)
     implementation(libs.constraintlayout)
+    implementation("androidx.cardview:cardview:1.0.0")
 
     // RecyclerView (listes Livres, Membres, etc.)
     implementation("androidx.recyclerview:recyclerview:1.3.2")

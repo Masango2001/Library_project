@@ -10,20 +10,20 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.bibliotheque.R;
-import com.example.bibliotheque.entities.Livre;
+import com.example.bibliotheque.model.LivreCatalogueItem;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class LivreAdapter extends RecyclerView.Adapter<LivreAdapter.ViewHolder> {
 
-    private List<Livre> list = new ArrayList<>();
+    private List<LivreCatalogueItem> list = new ArrayList<>();
 
     public interface OnLivreAction {
-        void onDelete(Livre livre);
-        void onUpdate(Livre livre);
-        void onEmprunt(Livre livre);
-        void onRetour(Livre livre);
+        void onDelete(LivreCatalogueItem livre);
+        void onUpdate(LivreCatalogueItem livre);
+        void onEmprunt(LivreCatalogueItem livre);
+        void onRetour(LivreCatalogueItem livre);
     }
 
     private OnLivreAction listener;
@@ -35,37 +35,47 @@ public class LivreAdapter extends RecyclerView.Adapter<LivreAdapter.ViewHolder> 
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext())
+        View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_livre, parent, false);
-        return new ViewHolder(v);
+        return new ViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder h, int i) {
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+        LivreCatalogueItem livre = list.get(position);
 
-        Livre l = list.get(i);
+        holder.txtTitre.setText(livre.titre);
+        holder.txtIsbn.setText(
+                "ISBN: " + livre.isbn
+                        + " | Auteur: " + livre.auteurNomComplet
+                        + " | Categorie: " + livre.categorieNom
+        );
+        holder.txtStock.setText(
+                "Stock: " + livre.quantiteDisponible + "/" + livre.quantiteTotale
+        );
 
-        h.txtTitre.setText(l.getTitre());
-        h.txtIsbn.setText(l.getIsbn());
-
-        // DELETE
-        h.btnDelete.setOnClickListener(v -> {
-            if (listener != null) listener.onDelete(l);
+        holder.btnDelete.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onDelete(livre);
+            }
         });
 
-        // UPDATE
-        h.btnEdit.setOnClickListener(v -> {
-            if (listener != null) listener.onUpdate(l);
+        holder.btnEdit.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onUpdate(livre);
+            }
         });
 
-        // EMPRUNT
-        h.btnEmprunt.setOnClickListener(v -> {
-            if (listener != null) listener.onEmprunt(l);
+        holder.btnEmprunt.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onEmprunt(livre);
+            }
         });
 
-        // RETOUR
-        h.btnRetour.setOnClickListener(v -> {
-            if (listener != null) listener.onRetour(l);
+        holder.btnRetour.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onRetour(livre);
+            }
         });
     }
 
@@ -74,26 +84,30 @@ public class LivreAdapter extends RecyclerView.Adapter<LivreAdapter.ViewHolder> 
         return list.size();
     }
 
-    public void setList(List<Livre> list) {
-        this.list = list;
+    public void setList(List<LivreCatalogueItem> list) {
+        this.list = list != null ? list : new ArrayList<>();
         notifyDataSetChanged();
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
 
-        TextView txtTitre, txtIsbn;
-        ImageButton btnDelete, btnEdit, btnEmprunt, btnRetour;
+        private final TextView txtTitre;
+        private final TextView txtIsbn;
+        private final TextView txtStock;
+        private final ImageButton btnDelete;
+        private final ImageButton btnEdit;
+        private final ImageButton btnEmprunt;
+        private final ImageButton btnRetour;
 
-        public ViewHolder(@NonNull View v) {
-            super(v);
-
-            txtTitre = v.findViewById(R.id.txtTitre);
-            txtIsbn = v.findViewById(R.id.txtIsbn);
-
-            btnDelete = v.findViewById(R.id.btnDelete);
-            btnEdit = v.findViewById(R.id.btnEdit);
-            btnEmprunt = v.findViewById(R.id.btnEmprunt);
-            btnRetour = v.findViewById(R.id.btnRetour);
+        ViewHolder(@NonNull View itemView) {
+            super(itemView);
+            txtTitre = itemView.findViewById(R.id.txtTitre);
+            txtIsbn = itemView.findViewById(R.id.txtIsbn);
+            txtStock = itemView.findViewById(R.id.txtStock);
+            btnDelete = itemView.findViewById(R.id.btnDelete);
+            btnEdit = itemView.findViewById(R.id.btnEdit);
+            btnEmprunt = itemView.findViewById(R.id.btnEmprunt);
+            btnRetour = itemView.findViewById(R.id.btnRetour);
         }
     }
 }

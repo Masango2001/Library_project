@@ -1,5 +1,6 @@
 package com.example.bibliotheque.entities;
 
+import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
@@ -11,6 +12,8 @@ public class Categorie {
     private int id;
 
     private String nom;
+
+    @ColumnInfo(name = "description")
     private String description;
 
     // ✅ constructeur vide (IMPORTANT pour Room)

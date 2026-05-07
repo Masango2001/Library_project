@@ -1,6 +1,7 @@
 package com.example.bibliotheque.ui.categories;
 
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -8,14 +9,20 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.bibliotheque.R;
+import com.example.bibliotheque.data.AppDatabase;
 import com.example.bibliotheque.entities.Categorie;
-import com.example.bibliotheque.repository.CategorieRepository;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class AddCategorieActivity extends AppCompatActivity {
 
-    private EditText edtNom, edtDescription;
+    private EditText edtNom;
+    private EditText edtDescription;
     private Button btnSave;
-    private CategorieRepository repository;
+    private AppDatabase db;
+    private ExecutorService executorService;
+    private int categorieId = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,22 +33,55 @@ public class AddCategorieActivity extends AppCompatActivity {
         edtDescription = findViewById(R.id.edtDescription);
         btnSave = findViewById(R.id.btnSave);
 
-        repository = new CategorieRepository(getApplication());
+        db = AppDatabase.getInstance(this);
+        executorService = Executors.newSingleThreadExecutor();
+        loadEditMode();
 
-        btnSave.setOnClickListener(v -> {
-            String nom = edtNom.getText().toString().trim();
-            String description = edtDescription.getText().toString().trim();
+        btnSave.setOnClickListener(v -> saveCategorie());
+    }
 
-            if (nom.isEmpty()) {
-                Toast.makeText(this, "Veuillez saisir un nom", Toast.LENGTH_SHORT).show();
+    private void loadEditMode() {
+        if (!getIntent().hasExtra("id")) {
+            return;
+        }
+
+        categorieId = getIntent().getIntExtra("id", -1);
+        edtNom.setText(getIntent().getStringExtra("nom"));
+        edtDescription.setText(getIntent().getStringExtra("description"));
+        setTitle("Modifier categorie");
+    }
+
+    private void saveCategorie() {
+        String nom = edtNom.getText().toString().trim();
+        String description = edtDescription.getText().toString().trim();
+
+        if (TextUtils.isEmpty(nom)) {
+            Toast.makeText(this, "Veuillez saisir un nom", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        executorService.execute(() -> {
+            if (db.categorieDao().existsByNameExcludingId(nom, categorieId) > 0) {
+                runOnUiThread(() -> Toast.makeText(
+                        this,
+                        "Cette categorie existe deja",
+                        Toast.LENGTH_SHORT
+                ).show());
                 return;
             }
 
             Categorie categorie = new Categorie(nom, description);
-            repository.insert(categorie);
-            
-            Toast.makeText(this, "Catégorie ajoutée", Toast.LENGTH_SHORT).show();
-            finish();
+            if (categorieId == -1) {
+                db.categorieDao().insert(categorie);
+            } else {
+                categorie.setId(categorieId);
+                db.categorieDao().update(categorie);
+            }
+
+            runOnUiThread(() -> {
+                Toast.makeText(this, "Categorie enregistree", Toast.LENGTH_SHORT).show();
+                finish();
+            });
         });
     }
 }

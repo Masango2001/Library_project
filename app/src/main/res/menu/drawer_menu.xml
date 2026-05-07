@@ -1,10 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <item android:id="@+id/nav_auteurs" android:title="Auteurs"/>
-    <item android:id="@+id/nav_categories" android:title="Catégories"/>
-    <item android:id="@+id/nav_livres" android:title="Livres"/>
-    <item android:id="@+id/nav_membres" android:title="Membres"/>
-    <item android:id="@+id/nav_emprunts" android:title="Emprunts"/>
+    <!-- SECTION PRINCIPALE -->
+    <group android:checkableBehavior="single">
+
+        <item
+            android:id="@+id/nav_dashboard"
+            android:icon="@drawable/ic_dashboard"
+            android:title="Tableau de bord" />
+
+        <item
+            android:id="@+id/nav_livres"
+            android:icon="@drawable/ic_book"
+            android:title="Livres" />
+
+        <item
+            android:id="@+id/nav_auteurs"
+            android:icon="@drawable/ic_author"
+            android:title="Auteurs" />
+
+        <item
+            android:id="@+id/nav_categories"
+            android:icon="@drawable/ic_category"
+            android:title="Catégories" />
+
+        <item
+            android:id="@+id/nav_membres"
+            android:icon="@drawable/ic_members"
+            android:title="Membres" />
+
+        <item
+            android:id="@+id/nav_emprunts"
+            android:icon="@drawable/ic_exchange"
+            android:title="Emprunts" />
+
+    </group>
+
+    <!-- SEPARATEUR VISUEL -->
+    <item android:title="">
+        <menu>
+            <item
+                android:enabled="false"
+                android:title="──────────" />
+        </menu>
+    </item>
+
+    <!-- SECTION SYSTEME (OPTION PRO) -->
+
 
 </menu>

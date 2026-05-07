@@ -2,9 +2,32 @@ package com.example.bibliotheque.entities;
 
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.ForeignKey;
+import androidx.room.Ignore;
+import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
-@Entity(tableName = "emprunts")
+@Entity(
+        tableName = "emprunts",
+        foreignKeys = {
+                @ForeignKey(
+                        entity = Membre.class,
+                        parentColumns = "id",
+                        childColumns = "membre_id",
+                        onDelete = ForeignKey.RESTRICT
+                ),
+                @ForeignKey(
+                        entity = Livre.class,
+                        parentColumns = "id",
+                        childColumns = "livre_id",
+                        onDelete = ForeignKey.RESTRICT
+                )
+        },
+        indices = {
+                @Index("membre_id"),
+                @Index("livre_id")
+        }
+)
 public class Emprunt {
 
     @PrimaryKey(autoGenerate = true)
@@ -29,6 +52,7 @@ public class Emprunt {
 
     public Emprunt() {}
 
+    @Ignore
     public Emprunt(int membreId, int livreId,
                    long dateEmprunt,
                    long dateRetourPrevue,

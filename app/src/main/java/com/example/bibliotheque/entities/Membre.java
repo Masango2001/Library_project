@@ -1,5 +1,6 @@
 package com.example.bibliotheque.entities;
 
+import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
@@ -15,7 +16,10 @@ public class Membre {
     private String email;
     private String telephone;
     private String adresse;
+
+    @ColumnInfo(name = "date_inscription")
     private String dateInscription;
+
     private String statut; // actif ou suspendu
 
     // ================= CONSTRUCTEUR ROOM =================
