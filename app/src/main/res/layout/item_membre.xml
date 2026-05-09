@@ -4,9 +4,10 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginHorizontal="8dp"
-    android:layout_marginVertical="4dp"
-    app:cardCornerRadius="8dp"
-    app:cardElevation="2dp">
+    android:layout_marginVertical="6dp"
+    app:cardCornerRadius="10dp"
+    app:cardElevation="4dp"
+    app:cardUseCompatPadding="true">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -14,6 +15,7 @@
         android:orientation="vertical"
         android:padding="12dp">
 
+        <!-- NOM + PRENOM -->
         <TextView
             android:id="@+id/txtNomPrenom"
             android:layout_width="wrap_content"
@@ -21,8 +23,9 @@
             android:text="Nom Prénom"
             android:textSize="18sp"
             android:textStyle="bold"
-            android:textColor="@android:color/black"/>
+            android:textColor="@android:color/black" />
 
+        <!-- EMAIL -->
         <TextView
             android:id="@+id/txtEmail"
             android:layout_width="wrap_content"
@@ -32,21 +35,23 @@
             android:textColor="@android:color/darker_gray"
             android:layout_marginTop="2dp"/>
 
+        <!-- STATUT + DATE -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginTop="4dp">
+            android:layout_marginTop="6dp"
+            android:gravity="center_vertical">
 
             <TextView
                 android:id="@+id/txtStatut"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Statut"
+                android:text="ACTIF"
                 android:textSize="12sp"
-                android:paddingHorizontal="8dp"
-                android:paddingVertical="2dp"
-                android:background="@android:color/holo_green_light"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="3dp"
+                android:background="@android:color/holo_green_dark"
                 android:textColor="@android:color/white"/>
 
             <View
@@ -58,10 +63,41 @@
                 android:id="@+id/txtDate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Inscrit le: 01/01/2023"
+                android:text="Inscrit: 01/01/2023"
                 android:textSize="12sp"
                 android:textColor="@android:color/darker_gray"/>
         </LinearLayout>
 
+        <!-- ACTIONS -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="end"
+            android:layout_marginTop="12dp">
+
+            <Button
+                android:id="@+id/btnEdit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Modifier"/>
+
+            <Button
+                android:id="@+id/btnToggle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Suspendre"
+                android:layout_marginStart="8dp"/>
+
+            <Button
+                android:id="@+id/btnDelete"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Supprimer"
+                android:layout_marginStart="8dp"/>
+
+        </LinearLayout>
+
     </LinearLayout>
+
 </androidx.cardview.widget.CardView>

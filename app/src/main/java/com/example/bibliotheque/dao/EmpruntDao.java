@@ -18,62 +18,89 @@ import java.util.List;
 @Dao
 public interface EmpruntDao {
 
+    // ================= INSERT =================
     @Insert(onConflict = OnConflictStrategy.ABORT)
     long insert(Emprunt emprunt);
 
+    // ================= UPDATE =================
     @Update
     void update(Emprunt emprunt);
 
+    // ================= DELETE =================
     @Delete
     void delete(Emprunt emprunt);
 
+    // ================= LIST ALL =================
     @Query("SELECT * FROM emprunts ORDER BY date_emprunt DESC")
     LiveData<List<Emprunt>> getAllEmprunts();
 
-    @Query("SELECT e.id, e.membre_id AS membreId, e.livre_id AS livreId, " +
-            "e.date_emprunt AS dateEmprunt, e.date_retour_prevue AS dateRetourPrevue, " +
-            "e.date_retour_reelle AS dateRetourReelle, e.statut, " +
-            "m.nom || ' ' || m.prenom AS membreNomComplet, l.titre AS livreTitre " +
+    // ================= DETAILS JOIN =================
+    @Query("SELECT e.id, " +
+            "e.membre_id AS membreId, " +
+            "e.livre_id AS livreId, " +
+            "e.date_emprunt AS dateEmprunt, " +
+            "e.date_retour_prevue AS dateRetourPrevue, " +
+            "e.date_retour_reelle AS dateRetourReelle, " +
+            "e.statut, " +
+            "m.nom || ' ' || m.prenom AS membreNomComplet, " +
+            "l.titre AS livreTitre " +
             "FROM emprunts e " +
             "INNER JOIN membres m ON m.id = e.membre_id " +
             "INNER JOIN livres l ON l.id = e.livre_id " +
             "ORDER BY e.date_emprunt DESC")
     LiveData<List<EmpruntDisplayItem>> getAllEmpruntDetails();
 
-    @Query("SELECT * FROM emprunts WHERE id = :id")
+    // ================= GET BY ID =================
+    @Query("SELECT * FROM emprunts WHERE id = :id LIMIT 1")
     LiveData<Emprunt> getEmpruntById(int id);
 
     @Query("SELECT * FROM emprunts WHERE id = :id LIMIT 1")
     Emprunt getEmpruntByIdSync(int id);
 
-    @Query("SELECT * FROM emprunts WHERE membre_id = :membreId")
+    // ================= FILTERS =================
+    @Query("SELECT * FROM emprunts WHERE membre_id = :membreId ORDER BY date_emprunt DESC")
     LiveData<List<Emprunt>> getEmpruntsByMembre(int membreId);
 
-    @Query("SELECT * FROM emprunts WHERE livre_id = :livreId")
+    @Query("SELECT * FROM emprunts WHERE livre_id = :livreId ORDER BY date_emprunt DESC")
     LiveData<List<Emprunt>> getEmpruntsByLivre(int livreId);
 
+    // ================= STATISTICS =================
     @Query("SELECT COUNT(*) FROM emprunts")
     LiveData<Integer> getTotalEmprunts();
 
-    @Query("SELECT COUNT(*) FROM emprunts WHERE statut = 'en cours'")
+    @Query("SELECT COUNT(*) FROM emprunts WHERE statut = 'EN_COURS'")
     LiveData<Integer> getEmpruntsEnCours();
 
-    @Query("SELECT COUNT(*) FROM emprunts WHERE statut = 'en retard'")
+    @Query("SELECT COUNT(*) FROM emprunts WHERE statut = 'EN_RETARD'")
     LiveData<Integer> getEmpruntsEnRetard();
 
-    @Query("SELECT COUNT(*) FROM emprunts WHERE membre_id = :membreId AND date_retour_reelle = 0")
+    // ================= ACTIVE EMPRUNTS =================
+    @Query("SELECT COUNT(*) FROM emprunts " +
+            "WHERE membre_id = :membreId " +
+            "AND date_retour_reelle IS NULL")
     int countEmpruntsActifsByMembre(int membreId);
 
-    @Query("UPDATE emprunts SET statut = 'en retard' " +
+    // ================= UPDATE RETARDS =================
+    @Query("UPDATE emprunts SET statut = 'EN_RETARD' " +
             "WHERE date_retour_prevue < :currentTime " +
-            "AND date_retour_reelle = 0 " +
-            "AND statut = 'en cours'")
+            "AND date_retour_reelle IS NULL " +
+            "AND statut = 'EN_COURS'")
     void updateRetardsAutomatiques(long currentTime);
 
-    @Query("UPDATE emprunts SET date_retour_reelle = :dateRetourReelle, statut = :statut WHERE id = :id")
-    void enregistrerRetour(int id, long dateRetourReelle, String statut);
+    // ================= RETURN BOOK =================
+    @Query("UPDATE emprunts " +
+            "SET date_retour_reelle = :dateRetourReelle, " +
+            "statut = :statut " +
+            "WHERE id = :id")
+    void enregistrerRetour(
+            int id,
+            Long dateRetourReelle,
+            String statut
+    );
 
-    @Query("SELECT l.titre AS livreTitre, COUNT(e.id) AS totalEmprunts " +
+    // ================= TOP LIVRES =================
+    @Query("SELECT l.titre AS livreTitre, " +
+            "COUNT(e.id) AS totalEmprunts " +
             "FROM emprunts e " +
             "INNER JOIN livres l ON l.id = e.livre_id " +
             "GROUP BY e.livre_id " +
@@ -81,9 +108,12 @@ public interface EmpruntDao {
             "LIMIT :limit")
     LiveData<List<TopLivreStat>> getTopLivres(int limit);
 
-    @Query("SELECT m.nom || ' ' || m.prenom AS membreNomComplet, COUNT(e.id) AS totalEmprunts " +
+    // ================= TOP MEMBRES =================
+    @Query("SELECT m.nom || ' ' || m.prenom AS membreNomComplet, " +
+            "COUNT(e.id) AS totalEmprunts " +
             "FROM emprunts e " +
             "INNER JOIN membres m ON m.id = e.membre_id " +
+            "WHERE m.statut = 'ACTIF' " +
             "GROUP BY e.membre_id " +
             "ORDER BY totalEmprunts DESC, m.nom ASC, m.prenom ASC " +
             "LIMIT :limit")

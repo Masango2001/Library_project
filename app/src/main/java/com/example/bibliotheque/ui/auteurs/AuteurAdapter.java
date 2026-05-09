@@ -40,12 +40,13 @@ public class AuteurAdapter extends RecyclerView.Adapter<AuteurAdapter.ViewHolder
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+
         Auteur a = list.get(position);
 
-        holder.txtNom.setText("Nom: " + a.getNom());
-        holder.txtPrenom.setText("Prénom: " + a.getPrenom());
-        holder.txtNationalite.setText("Nationalité: " + a.getNationalite());
-        holder.txtDateNaissance.setText("Né le: " + a.getDateNaissance());
+        holder.txtNom.setText(a.getNom());
+        holder.txtPrenom.setText(a.getPrenom());
+        holder.txtNationalite.setText(a.getNationalite());
+        holder.txtDateNaissance.setText(a.getDateNaissance());
 
         holder.btnEdit.setOnClickListener(v -> {
             if (listener != null) {
@@ -62,24 +63,27 @@ public class AuteurAdapter extends RecyclerView.Adapter<AuteurAdapter.ViewHolder
 
     @Override
     public int getItemCount() {
-        return list.size();
+        return list != null ? list.size() : 0;
     }
 
     public void setList(List<Auteur> list) {
-        this.list = list;
+        this.list = (list != null) ? list : new ArrayList<>();
         notifyDataSetChanged();
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
+
         TextView txtNom, txtPrenom, txtNationalite, txtDateNaissance;
         Button btnEdit, btnDelete;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
+
             txtNom = itemView.findViewById(R.id.txtNom);
             txtPrenom = itemView.findViewById(R.id.txtPrenom);
             txtNationalite = itemView.findViewById(R.id.txtNationalite);
             txtDateNaissance = itemView.findViewById(R.id.txtDateNaissance);
+
             btnEdit = itemView.findViewById(R.id.btnEdit);
             btnDelete = itemView.findViewById(R.id.btnDelete);
         }

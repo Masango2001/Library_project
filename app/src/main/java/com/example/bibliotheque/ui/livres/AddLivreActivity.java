@@ -25,20 +25,18 @@ import java.util.concurrent.Executors;
 
 public class AddLivreActivity extends AppCompatActivity {
 
-    private EditText titre;
-    private EditText isbn;
-    private EditText annee;
-    private EditText editeur;
-    private EditText stock;
-    private Spinner spinnerAuteur;
-    private Spinner spinnerCategorie;
+    private EditText titre, isbn, annee, editeur, stock;
+    private Spinner spinnerAuteur, spinnerCategorie;
     private Button btnSave;
+
     private AuteurRepository auteurRepository;
     private CategorieRepository categorieRepository;
     private AppDatabase db;
     private ExecutorService executorService;
+
     private List<Auteur> auteurList = new ArrayList<>();
     private List<Categorie> categorieList = new ArrayList<>();
+
     private int livreId = -1;
     private int auteurIdSelection = -1;
     private int categorieIdSelection = -1;
@@ -53,6 +51,7 @@ public class AddLivreActivity extends AppCompatActivity {
         annee = findViewById(R.id.edtAnnee);
         editeur = findViewById(R.id.edtEditeur);
         stock = findViewById(R.id.edtStock);
+
         spinnerAuteur = findViewById(R.id.spinnerAuteur);
         spinnerCategorie = findViewById(R.id.spinnerCategorie);
         btnSave = findViewById(R.id.btnSave);
@@ -69,9 +68,7 @@ public class AddLivreActivity extends AppCompatActivity {
     }
 
     private void loadEditMode() {
-        if (!getIntent().hasExtra("id")) {
-            return;
-        }
+        if (getIntent() == null || !getIntent().hasExtra("id")) return;
 
         livreId = getIntent().getIntExtra("id", -1);
         auteurIdSelection = getIntent().getIntExtra("auteur_id", -1);
@@ -82,19 +79,20 @@ public class AddLivreActivity extends AppCompatActivity {
         annee.setText(String.valueOf(getIntent().getIntExtra("annee_publication", 0)));
         editeur.setText(getIntent().getStringExtra("editeur"));
         stock.setText(String.valueOf(getIntent().getIntExtra("quantite_totale", 0)));
-        setTitle("Modifier livre");
+
+        setTitle(livreId == -1 ? "Ajouter livre" : "Modifier livre");
     }
 
     private void loadSpinners() {
+
         auteurRepository.getAllAuteurs().observe(this, auteurs -> {
-            if (auteurs == null) {
-                return;
-            }
+            if (auteurs == null) return;
 
             auteurList = auteurs;
+
             List<String> names = new ArrayList<>();
-            for (Auteur auteur : auteurs) {
-                names.add(auteur.getNom() + " " + auteur.getPrenom());
+            for (Auteur a : auteurs) {
+                names.add(a.getNom() + " " + a.getPrenom());
             }
 
             ArrayAdapter<String> adapter = new ArrayAdapter<>(
@@ -102,21 +100,22 @@ public class AddLivreActivity extends AppCompatActivity {
                     android.R.layout.simple_spinner_dropdown_item,
                     names
             );
+
             spinnerAuteur.setAdapter(adapter);
+
             if (auteurIdSelection != -1) {
                 spinnerAuteur.setSelection(findAuteurPosition(auteurIdSelection));
             }
         });
 
         categorieRepository.getAllCategories().observe(this, categories -> {
-            if (categories == null) {
-                return;
-            }
+            if (categories == null) return;
 
             categorieList = categories;
+
             List<String> names = new ArrayList<>();
-            for (Categorie categorie : categories) {
-                names.add(categorie.getNom());
+            for (Categorie c : categories) {
+                names.add(c.getNom());
             }
 
             ArrayAdapter<String> adapter = new ArrayAdapter<>(
@@ -124,32 +123,31 @@ public class AddLivreActivity extends AppCompatActivity {
                     android.R.layout.simple_spinner_dropdown_item,
                     names
             );
+
             spinnerCategorie.setAdapter(adapter);
+
             if (categorieIdSelection != -1) {
                 spinnerCategorie.setSelection(findCategoriePosition(categorieIdSelection));
             }
         });
     }
 
-    private int findAuteurPosition(int auteurId) {
-        for (int index = 0; index < auteurList.size(); index++) {
-            if (auteurList.get(index).getId() == auteurId) {
-                return index;
-            }
+    private int findAuteurPosition(int id) {
+        for (int i = 0; i < auteurList.size(); i++) {
+            if (auteurList.get(i).getId() == id) return i;
         }
         return 0;
     }
 
-    private int findCategoriePosition(int categorieId) {
-        for (int index = 0; index < categorieList.size(); index++) {
-            if (categorieList.get(index).getId() == categorieId) {
-                return index;
-            }
+    private int findCategoriePosition(int id) {
+        for (int i = 0; i < categorieList.size(); i++) {
+            if (categorieList.get(i).getId() == id) return i;
         }
         return 0;
     }
 
     private void saveLivre() {
+
         String titreValue = titre.getText().toString().trim();
         String isbnValue = isbn.getText().toString().trim();
         String anneeValue = annee.getText().toString().trim();
@@ -160,27 +158,28 @@ public class AddLivreActivity extends AppCompatActivity {
                 || TextUtils.isEmpty(isbnValue)
                 || TextUtils.isEmpty(editeurValue)
                 || TextUtils.isEmpty(stockValue)) {
-            Toast.makeText(this, "Titre, ISBN, editeur et stock sont obligatoires", Toast.LENGTH_SHORT).show();
+
+            Toast.makeText(this, "Champs obligatoires manquants", Toast.LENGTH_SHORT).show();
             return;
         }
 
         if (auteurList.isEmpty() || categorieList.isEmpty()) {
-            Toast.makeText(this, "Ajoutez d'abord un auteur et une categorie", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Ajoutez auteur et catégorie", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        int anneeInt;
+        int anneeInt = TextUtils.isEmpty(anneeValue) ? 2026 : Integer.parseInt(anneeValue);
         int stockInt;
+
         try {
-            anneeInt = TextUtils.isEmpty(anneeValue) ? 2026 : Integer.parseInt(anneeValue);
             stockInt = Integer.parseInt(stockValue);
-        } catch (NumberFormatException exception) {
-            Toast.makeText(this, "Annee ou stock invalide", Toast.LENGTH_SHORT).show();
+        } catch (Exception e) {
+            Toast.makeText(this, "Stock invalide", Toast.LENGTH_SHORT).show();
             return;
         }
 
         if (stockInt <= 0) {
-            Toast.makeText(this, "Le stock doit etre superieur a zero", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Stock doit être > 0", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -188,37 +187,38 @@ public class AddLivreActivity extends AppCompatActivity {
         int categorieId = categorieList.get(spinnerCategorie.getSelectedItemPosition()).getId();
 
         executorService.execute(() -> {
+
             if (db.livreDao().countByIsbnExcludingId(isbnValue, livreId) > 0) {
-                runOnUiThread(() -> Toast.makeText(
-                        this,
-                        "Cet ISBN existe deja",
-                        Toast.LENGTH_SHORT
-                ).show());
+                runOnUiThread(() ->
+                        Toast.makeText(this, "ISBN déjà existant", Toast.LENGTH_SHORT).show()
+                );
                 return;
             }
 
             int quantiteDisponible = stockInt;
+
             if (livreId != -1) {
-                Livre livreExistant = db.livreDao().getLivreByIdSync(livreId);
-                if (livreExistant == null) {
-                    runOnUiThread(() -> Toast.makeText(
-                            this,
-                            "Livre introuvable",
-                            Toast.LENGTH_SHORT
-                    ).show());
+                Livre exist = db.livreDao().getLivreByIdSync(livreId);
+
+                if (exist == null) {
+                    runOnUiThread(() ->
+                            Toast.makeText(this, "Livre introuvable", Toast.LENGTH_SHORT).show()
+                    );
                     return;
                 }
 
-                int quantiteEmpruntee = livreExistant.getQuantiteTotale() - livreExistant.getQuantiteDisponible();
-                if (stockInt < quantiteEmpruntee) {
-                    runOnUiThread(() -> Toast.makeText(
-                            this,
-                            "Le stock total ne peut pas etre inferieur aux exemplaires deja empruntes",
-                            Toast.LENGTH_LONG
-                    ).show());
+                int empruntes = exist.getQuantiteTotale() - exist.getQuantiteDisponible();
+
+                if (stockInt < empruntes) {
+                    runOnUiThread(() ->
+                            Toast.makeText(this,
+                                    "Stock < exemplaires déjà empruntés",
+                                    Toast.LENGTH_LONG).show()
+                    );
                     return;
                 }
-                quantiteDisponible = stockInt - quantiteEmpruntee;
+
+                quantiteDisponible = stockInt - empruntes;
             }
 
             Livre livre = new Livre(
@@ -240,7 +240,7 @@ public class AddLivreActivity extends AppCompatActivity {
             }
 
             runOnUiThread(() -> {
-                Toast.makeText(this, "Livre enregistre", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Livre enregistré", Toast.LENGTH_SHORT).show();
                 finish();
             });
         });

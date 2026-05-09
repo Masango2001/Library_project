@@ -10,6 +10,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
+import androidx.appcompat.widget.Toolbar;
 import androidx.lifecycle.LiveData;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -27,18 +28,27 @@ import java.util.concurrent.Executors;
 
 public class LivreActivity extends AppCompatActivity {
 
+    private Toolbar toolbar;
     private RecyclerView recyclerView;
     private Button btnAdd;
     private LivreAdapter adapter;
+
     private LivreRepository repository;
     private AppDatabase db;
     private ExecutorService executorService;
+
     private LiveData<List<LivreCatalogueItem>> currentSource;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_livre);
+
+        toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
 
         recyclerView = findViewById(R.id.recyclerLivres);
         btnAdd = findViewById(R.id.btnAddLivre);
@@ -53,22 +63,27 @@ public class LivreActivity extends AppCompatActivity {
 
         setupSearch();
         setupActions();
+
         observeCatalogue(null);
 
-        btnAdd.setOnClickListener(v -> startActivity(new Intent(this, AddLivreActivity.class)));
+        btnAdd.setOnClickListener(v ->
+                startActivity(new Intent(this, AddLivreActivity.class))
+        );
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        finish();
+        return true;
     }
 
     private void setupSearch() {
-        LinearLayout root = (LinearLayout) btnAdd.getParent();
+        ViewGroup root = (ViewGroup) btnAdd.getParent();
+
         SearchView searchView = new SearchView(this);
-        searchView.setQueryHint("Rechercher par titre, auteur ou categorie");
+        searchView.setQueryHint("Rechercher livre");
         searchView.setIconifiedByDefault(false);
 
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-        );
-        searchView.setLayoutParams(params);
         root.addView(searchView, 1);
 
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
@@ -87,23 +102,27 @@ public class LivreActivity extends AppCompatActivity {
     }
 
     private void setupActions() {
+
         adapter.setListener(new LivreAdapter.OnLivreAction() {
+
             @Override
             public void onDelete(LivreCatalogueItem livre) {
                 executorService.execute(() -> {
                     try {
                         db.livreDao().delete(livre.toLivre());
-                        runOnUiThread(() -> Toast.makeText(
-                                LivreActivity.this,
-                                "Livre supprime",
-                                Toast.LENGTH_SHORT
-                        ).show());
-                    } catch (Exception exception) {
-                        runOnUiThread(() -> Toast.makeText(
-                                LivreActivity.this,
-                                "Suppression impossible: ce livre est encore lie a des emprunts",
-                                Toast.LENGTH_LONG
-                        ).show());
+
+                        runOnUiThread(() ->
+                                Toast.makeText(LivreActivity.this,
+                                        "Livre supprimé",
+                                        Toast.LENGTH_SHORT).show()
+                        );
+
+                    } catch (Exception e) {
+                        runOnUiThread(() ->
+                                Toast.makeText(LivreActivity.this,
+                                        "Impossible de supprimer (emprunts liés)",
+                                        Toast.LENGTH_LONG).show()
+                        );
                     }
                 });
             }
@@ -111,6 +130,7 @@ public class LivreActivity extends AppCompatActivity {
             @Override
             public void onUpdate(LivreCatalogueItem livre) {
                 Intent intent = new Intent(LivreActivity.this, AddLivreActivity.class);
+
                 intent.putExtra("id", livre.id);
                 intent.putExtra("titre", livre.titre);
                 intent.putExtra("isbn", livre.isbn);
@@ -120,13 +140,16 @@ public class LivreActivity extends AppCompatActivity {
                 intent.putExtra("auteur_id", livre.auteurId);
                 intent.putExtra("quantite_totale", livre.quantiteTotale);
                 intent.putExtra("quantite_disponible", livre.quantiteDisponible);
+
                 startActivity(intent);
             }
 
             @Override
             public void onEmprunt(LivreCatalogueItem livre) {
                 if (livre.quantiteDisponible <= 0) {
-                    Toast.makeText(LivreActivity.this, "Plus de stock disponible", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(LivreActivity.this,
+                            "Stock indisponible",
+                            Toast.LENGTH_SHORT).show();
                     return;
                 }
 
@@ -137,18 +160,17 @@ public class LivreActivity extends AppCompatActivity {
 
             @Override
             public void onRetour(LivreCatalogueItem livre) {
-                Intent intent = new Intent(LivreActivity.this, EmpruntActivity.class);
-                startActivity(intent);
-                Toast.makeText(
-                        LivreActivity.this,
-                        "Selectionnez l'emprunt a retourner dans la liste",
-                        Toast.LENGTH_SHORT
-                ).show();
+                startActivity(new Intent(LivreActivity.this, EmpruntActivity.class));
+
+                Toast.makeText(LivreActivity.this,
+                        "Choisissez l’emprunt à retourner",
+                        Toast.LENGTH_SHORT).show();
             }
         });
     }
 
     private void observeCatalogue(String query) {
+
         if (currentSource != null) {
             currentSource.removeObservers(this);
         }

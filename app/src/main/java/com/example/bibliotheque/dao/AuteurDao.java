@@ -10,38 +10,60 @@ import java.util.List;
 @Dao
 public interface AuteurDao {
 
+    // =====================
     // INSERT
+    // =====================
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     long insert(Auteur auteur);
 
+    // =====================
     // UPDATE
+    // =====================
     @Update
     void update(Auteur auteur);
 
+    // =====================
     // DELETE
+    // =====================
     @Delete
     void delete(Auteur auteur);
 
+    // =====================
     // READ ALL
+    // =====================
     @Query("SELECT * FROM auteurs ORDER BY nom ASC, prenom ASC")
     LiveData<List<Auteur>> getAllAuteurs();
 
-    // READ BY ID
+    // =====================
+    // READ BY ID (LiveData)
+    // =====================
     @Query("SELECT * FROM auteurs WHERE id = :id LIMIT 1")
     LiveData<Auteur> getAuteurById(int id);
 
+    // =====================
+    // READ BY ID (SYNC)
+    // =====================
     @Query("SELECT * FROM auteurs WHERE id = :id LIMIT 1")
     Auteur getAuteurByIdSync(int id);
 
+    // =====================
     // SEARCH
-    @Query("SELECT * FROM auteurs WHERE nom LIKE '%' || :keyword || '%' " +
-            "OR prenom LIKE '%' || :keyword || '%' ORDER BY nom ASC")
+    // =====================
+    @Query("SELECT * FROM auteurs " +
+            "WHERE nom LIKE :keyword OR prenom LIKE :keyword " +
+            "ORDER BY nom ASC")
     LiveData<List<Auteur>> searchAuteurs(String keyword);
 
-    // STATISTICS
+    // =====================
+    // COUNT (CORRIGÉ)
+    // =====================
     @Query("SELECT COUNT(*) FROM auteurs")
     LiveData<Integer> countAuteurs();
 
-    @Query("SELECT COUNT(*) FROM auteurs WHERE nom = :nom AND prenom = :prenom AND id != :excludeId")
+    // =====================
+    // CHECK DUPLICATE
+    // =====================
+    @Query("SELECT COUNT(*) FROM auteurs " +
+            "WHERE nom = :nom AND prenom = :prenom AND id != :excludeId")
     int countByIdentityExcludingId(String nom, String prenom, int excludeId);
 }

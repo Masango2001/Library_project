@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -9,6 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Nom"
+        android:inputType="textPersonName"
         android:layout_marginBottom="10dp"/>
 
     <EditText
@@ -16,6 +18,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Prénom"
+        android:inputType="textPersonName"
         android:layout_marginBottom="10dp"/>
 
     <EditText
@@ -23,13 +26,15 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Nationalité"
+        android:inputType="text"
         android:layout_marginBottom="10dp"/>
 
     <EditText
         android:id="@+id/edtDateNaissance"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Date naissance"
+        android:hint="Date de naissance (JJ/MM/AAAA)"
+        android:inputType="date"
         android:layout_marginBottom="15dp"/>
 
     <Button

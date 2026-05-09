@@ -1,12 +1,7 @@
 package com.example.bibliotheque.dao;
 
 import androidx.lifecycle.LiveData;
-import androidx.room.Dao;
-import androidx.room.Delete;
-import androidx.room.Insert;
-import androidx.room.OnConflictStrategy;
-import androidx.room.Query;
-import androidx.room.Update;
+import androidx.room.*;
 
 import com.example.bibliotheque.entities.Categorie;
 
@@ -38,25 +33,24 @@ public interface CategorieDao {
     @Query("SELECT * FROM categories WHERE id = :id LIMIT 1")
     Categorie getCategorieByIdSync(int id);
 
-    // ================= RECHERCHE =================
+    // ================= SEARCH =================
     @Query("SELECT * FROM categories " +
-            "WHERE nom LIKE '%' || :keyword || '%' " +
-            "OR description LIKE '%' || :keyword || '%' " +
+            "WHERE nom LIKE :keyword OR description LIKE :keyword " +
             "ORDER BY nom ASC")
     LiveData<List<Categorie>> searchCategories(String keyword);
 
-    // ================= STATISTIQUES =================
+    // ================= COUNT (CORRIGÉ) =================
     @Query("SELECT COUNT(*) FROM categories")
     LiveData<Integer> countCategories();
 
-    // ================= VERIFICATION =================
-    @Query("SELECT COUNT(*) FROM categories WHERE nom = :nom LIMIT 1")
+    // ================= EXISTS (CORRIGÉ SAFE) =================
+    @Query("SELECT COUNT(*) FROM categories WHERE nom = :nom")
     int existsByName(String nom);
 
-    @Query("SELECT COUNT(*) FROM categories WHERE nom = :nom AND id != :excludeId LIMIT 1")
+    @Query("SELECT COUNT(*) FROM categories WHERE nom = :nom AND id != :excludeId")
     int existsByNameExcludingId(String nom, int excludeId);
 
-    // ================= SUPPRESSION PAR ID =================
+    // ================= DELETE BY ID =================
     @Query("DELETE FROM categories WHERE id = :id")
     void deleteById(int id);
 }

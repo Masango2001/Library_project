@@ -13,45 +13,56 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Ajouter un Membre"
-            android:textSize="20sp"
+            android:textSize="22sp"
             android:textStyle="bold"
             android:layout_marginBottom="16dp"/>
 
+        <!-- NOM -->
         <EditText
             android:id="@+id/edtNom"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Nom"
-            android:inputType="textPersonName"/>
+            android:inputType="textPersonName"
+            android:layout_marginBottom="10dp"/>
 
+        <!-- PRENOM -->
         <EditText
             android:id="@+id/edtPrenom"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Prénom"
-            android:inputType="textPersonName"/>
+            android:inputType="textPersonName"
+            android:layout_marginBottom="10dp"/>
 
+        <!-- EMAIL -->
         <EditText
             android:id="@+id/edtEmail"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Email"
-            android:inputType="textEmailAddress"/>
+            android:inputType="textEmailAddress"
+            android:layout_marginBottom="10dp"/>
 
+        <!-- TELEPHONE -->
         <EditText
             android:id="@+id/edtTelephone"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Téléphone"
-            android:inputType="phone"/>
+            android:inputType="phone"
+            android:layout_marginBottom="10dp"/>
 
+        <!-- ADRESSE -->
         <EditText
             android:id="@+id/edtAdresse"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Adresse"
-            android:inputType="textPostalAddress"/>
+            android:inputType="textPostalAddress"
+            android:layout_marginBottom="12dp"/>
 
+        <!-- STATUT -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -61,15 +72,16 @@
         <Spinner
             android:id="@+id/spinnerStatut"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:minHeight="48dp"/>
+            android:layout_height="48dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="20dp"/>
 
+        <!-- BUTTON -->
         <Button
             android:id="@+id/btnSave"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Enregistrer"
-            android:layout_marginTop="24dp"/>
+            android:text="Enregistrer"/>
 
     </LinearLayout>
 </ScrollView>

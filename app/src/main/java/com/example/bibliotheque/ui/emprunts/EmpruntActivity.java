@@ -6,6 +6,7 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -21,6 +22,7 @@ import java.util.concurrent.Executors;
 
 public class EmpruntActivity extends AppCompatActivity {
 
+    private Toolbar toolbar;
     private RecyclerView recyclerView;
     private Button btnAdd;
     private EmpruntAdapter adapter;
@@ -32,6 +34,12 @@ public class EmpruntActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_emprunt);
+
+        toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
 
         recyclerView = findViewById(R.id.recyclerEmprunts);
         btnAdd = findViewById(R.id.btnAddEmprunt);
@@ -45,37 +53,55 @@ public class EmpruntActivity extends AppCompatActivity {
         executorService = Executors.newSingleThreadExecutor();
 
         adapter.setListener(this::enregistrerRetour);
+
         loadData();
-        repository.updateRetards(System.currentTimeMillis());
+        refreshRetards();
 
         btnAdd.setOnClickListener(v ->
                 startActivity(new Intent(this, AddEmpruntActivity.class)));
     }
 
     @Override
+    public boolean onSupportNavigateUp() {
+        finish();
+        return true;
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
-        repository.updateRetards(System.currentTimeMillis());
+        refreshRetards();
     }
 
     private void loadData() {
-        repository.getAllDetails().observe(this, adapter::setList);
+        repository.getAllDetails().observe(this, list -> {
+            if (list != null) {
+                adapter.setList(list);
+            }
+        });
+    }
+
+    private void refreshRetards() {
+        repository.updateRetards(System.currentTimeMillis());
     }
 
     private void enregistrerRetour(EmpruntDisplayItem emprunt) {
+
         executorService.execute(() -> {
+
+            long now = System.currentTimeMillis();
+
             try {
-                long now = System.currentTimeMillis();
                 db.runInTransaction(() -> {
-                    com.example.bibliotheque.entities.Emprunt empruntDb =
-                            db.empruntDao().getEmpruntByIdSync(emprunt.id);
+
+                    var empruntDb = db.empruntDao().getEmpruntByIdSync(emprunt.id);
 
                     if (empruntDb == null) {
                         throw new IllegalStateException("Emprunt introuvable");
                     }
 
                     if (empruntDb.getDateRetourReelle() != 0L) {
-                        throw new IllegalStateException("Retour deja enregistre");
+                        throw new IllegalStateException("Retour déjà enregistré");
                     }
 
                     db.empruntDao().enregistrerRetour(
@@ -83,22 +109,33 @@ public class EmpruntActivity extends AppCompatActivity {
                             now,
                             LibraryConstants.STATUT_EMPRUNT_TERMINE
                     );
+
                     db.livreDao().incrementStock(empruntDb.getLivreId());
                 });
 
-                long retardJours = DateUtils.getRetardJours(emprunt.dateRetourPrevue, now);
+                long retardJours =
+                        DateUtils.getRetardJours(emprunt.dateRetourPrevue, now);
+
                 runOnUiThread(() -> {
-                    String message = retardJours > 0
-                            ? "Retour enregistre avec " + retardJours + " jour(s) de retard"
-                            : "Retour enregistre";
-                    Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+                    String message = (retardJours > 0)
+                            ? "Retour enregistré avec " + retardJours + " jour(s) de retard"
+                            : "Retour enregistré";
+
+                    Toast.makeText(EmpruntActivity.this, message, Toast.LENGTH_SHORT).show();
+
+                    // 🔥 refresh UI après retour
+                    loadData();
                 });
-            } catch (Exception exception) {
-                runOnUiThread(() -> Toast.makeText(
-                        this,
-                        exception.getMessage(),
-                        Toast.LENGTH_SHORT
-                ).show());
+
+            } catch (Exception e) {
+
+                runOnUiThread(() ->
+                        Toast.makeText(
+                                EmpruntActivity.this,
+                                e.getMessage() != null ? e.getMessage() : "Erreur retour",
+                                Toast.LENGTH_SHORT
+                        ).show()
+                );
             }
         });
     }

@@ -11,7 +11,7 @@
         android:theme="@style/Theme.Bibliotheque"
         tools:targetApi="31">
 
-        <!-- POINT D'ENTRÉE = DASHBOARD -->
+        <!-- DASHBOARD (ENTRY POINT) -->
         <activity
             android:name=".ui.dashboard.DashboardActivity"
             android:exported="true">
@@ -23,17 +23,50 @@
 
         </activity>
 
-        <!-- AUTRES ACTIVITÉS -->
-        <activity android:name=".ui.auteurs.AuteurActivity" />
-        <activity android:name=".ui.auteurs.AddAuteurActivity" />
-        <activity android:name=".ui.categories.CategorieActivity" />
-        <activity android:name=".ui.categories.AddCategorieActivity" />
-        <activity android:name=".ui.livres.LivreActivity" />
-        <activity android:name=".ui.livres.AddLivreActivity" />
-        <activity android:name=".ui.membres.MembreActivity" />
-        <activity android:name=".ui.membres.AddMembreActivity" />
-        <activity android:name=".ui.emprunts.EmpruntActivity" />
-        <activity android:name=".ui.emprunts.AddEmpruntActivity" />
+        <!-- LIVRES -->
+        <activity
+            android:name=".ui.livres.LivreActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.livres.AddLivreActivity"
+            android:exported="false" />
+
+        <!-- MEMBRES -->
+        <activity
+            android:name=".ui.membres.MembreActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.membres.AddMembreActivity"
+            android:exported="false" />
+
+        <!-- AUTEURS -->
+        <activity
+            android:name=".ui.auteurs.AuteurActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.auteurs.AddAuteurActivity"
+            android:exported="false" />
+
+        <!-- CATÉGORIES -->
+        <activity
+            android:name=".ui.categories.CategorieActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.categories.AddCategorieActivity"
+            android:exported="false" />
+
+        <!-- EMPRUNTS -->
+        <activity
+            android:name=".ui.emprunts.EmpruntActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.emprunts.AddEmpruntActivity"
+            android:exported="false" />
 
     </application>
 

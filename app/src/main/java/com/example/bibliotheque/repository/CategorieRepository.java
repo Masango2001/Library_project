@@ -16,7 +16,9 @@ public class CategorieRepository {
 
     private final CategorieDao categorieDao;
     private final LiveData<List<Categorie>> allCategories;
-    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
+
+    private static final ExecutorService executorService =
+            Executors.newFixedThreadPool(4);
 
     public CategorieRepository(Application application) {
         AppDatabase database = AppDatabase.getInstance(application);
@@ -31,22 +33,52 @@ public class CategorieRepository {
 
     // ================= INSERT =================
     public void insert(Categorie categorie) {
-        executorService.execute(() -> categorieDao.insert(categorie));
+        if (categorie == null) return;
+
+        executorService.execute(() -> {
+            try {
+                categorieDao.insert(categorie);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     // ================= UPDATE =================
     public void update(Categorie categorie) {
-        executorService.execute(() -> categorieDao.update(categorie));
+        if (categorie == null) return;
+
+        executorService.execute(() -> {
+            try {
+                categorieDao.update(categorie);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     // ================= DELETE =================
     public void delete(Categorie categorie) {
-        executorService.execute(() -> categorieDao.delete(categorie));
+        if (categorie == null) return;
+
+        executorService.execute(() -> {
+            try {
+                categorieDao.delete(categorie);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     // ================= SEARCH =================
     public LiveData<List<Categorie>> searchCategories(String keyword) {
-        return categorieDao.searchCategories(keyword);
+
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return allCategories;
+        }
+
+        String safeKeyword = "%" + keyword.trim() + "%";
+        return categorieDao.searchCategories(safeKeyword);
     }
 
     // ================= GET BY ID =================
@@ -57,5 +89,10 @@ public class CategorieRepository {
     // ================= COUNT =================
     public LiveData<Integer> countCategories() {
         return categorieDao.countCategories();
+    }
+
+    // ================= CLEAN =================
+    public void clear() {
+        executorService.shutdown();
     }
 }

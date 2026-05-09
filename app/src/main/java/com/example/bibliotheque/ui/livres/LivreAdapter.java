@@ -35,48 +35,45 @@ public class LivreAdapter extends RecyclerView.Adapter<LivreAdapter.ViewHolder> 
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_livre, parent, false);
+
         return new ViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+
         LivreCatalogueItem livre = list.get(position);
 
         holder.txtTitre.setText(livre.titre);
+
         holder.txtIsbn.setText(
-                "ISBN: " + livre.isbn
-                        + " | Auteur: " + livre.auteurNomComplet
-                        + " | Categorie: " + livre.categorieNom
+                "ISBN: " + livre.isbn +
+                        " | Auteur: " + livre.auteurNomComplet +
+                        " | Catégorie: " + livre.categorieNom
         );
+
         holder.txtStock.setText(
                 "Stock: " + livre.quantiteDisponible + "/" + livre.quantiteTotale
         );
 
-        holder.btnDelete.setOnClickListener(v -> {
-            if (listener != null) {
-                listener.onDelete(livre);
-            }
-        });
+        holder.btnDelete.setOnClickListener(v ->
+                safeCall(() -> listener.onDelete(livre))
+        );
 
-        holder.btnEdit.setOnClickListener(v -> {
-            if (listener != null) {
-                listener.onUpdate(livre);
-            }
-        });
+        holder.btnEdit.setOnClickListener(v ->
+                safeCall(() -> listener.onUpdate(livre))
+        );
 
-        holder.btnEmprunt.setOnClickListener(v -> {
-            if (listener != null) {
-                listener.onEmprunt(livre);
-            }
-        });
+        holder.btnEmprunt.setOnClickListener(v ->
+                safeCall(() -> listener.onEmprunt(livre))
+        );
 
-        holder.btnRetour.setOnClickListener(v -> {
-            if (listener != null) {
-                listener.onRetour(livre);
-            }
-        });
+        holder.btnRetour.setOnClickListener(v ->
+                safeCall(() -> listener.onRetour(livre))
+        );
     }
 
     @Override
@@ -85,25 +82,35 @@ public class LivreAdapter extends RecyclerView.Adapter<LivreAdapter.ViewHolder> 
     }
 
     public void setList(List<LivreCatalogueItem> list) {
-        this.list = list != null ? list : new ArrayList<>();
+        this.list = (list != null) ? list : new ArrayList<>();
         notifyDataSetChanged();
+    }
+
+    // 🔥 sécurité centralisée
+    private void safeCall(Runnable action) {
+        if (listener != null) {
+            action.run();
+        }
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
 
-        private final TextView txtTitre;
-        private final TextView txtIsbn;
-        private final TextView txtStock;
-        private final ImageButton btnDelete;
-        private final ImageButton btnEdit;
-        private final ImageButton btnEmprunt;
-        private final ImageButton btnRetour;
+        TextView txtTitre;
+        TextView txtIsbn;
+        TextView txtStock;
+
+        ImageButton btnDelete;
+        ImageButton btnEdit;
+        ImageButton btnEmprunt;
+        ImageButton btnRetour;
 
         ViewHolder(@NonNull View itemView) {
             super(itemView);
+
             txtTitre = itemView.findViewById(R.id.txtTitre);
             txtIsbn = itemView.findViewById(R.id.txtIsbn);
             txtStock = itemView.findViewById(R.id.txtStock);
+
             btnDelete = itemView.findViewById(R.id.btnDelete);
             btnEdit = itemView.findViewById(R.id.btnEdit);
             btnEmprunt = itemView.findViewById(R.id.btnEmprunt);

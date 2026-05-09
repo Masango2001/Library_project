@@ -15,15 +15,21 @@
         android:background="@color/gray_light">
 
         <!-- TOOLBAR -->
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/toolbar"
+        <com.google.android.material.appbar.AppBarLayout
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="@color/primary"
-            android:elevation="4dp"
-            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-            app:title="Bibliothèque"
-            app:titleTextColor="@android:color/white" />
+            android:layout_height="wrap_content"
+            android:theme="@style/ThemeOverlay.Material3.Dark.ActionBar">
+
+            <com.google.android.material.appbar.MaterialToolbar
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                android:background="@color/primary"
+                android:title="Tableau de bord"
+                android:titleTextColor="@android:color/white"
+                app:navigationIcon="@android:drawable/ic_menu_sort_by_size" />
+
+        </com.google.android.material.appbar.AppBarLayout>
 
         <!-- SCROLL CONTENT -->
         <androidx.core.widget.NestedScrollView
@@ -38,7 +44,7 @@
                 android:padding="16dp">
 
                 <!-- ===================== -->
-                <!-- LIGNE 1 -->
+                <!-- LIGNE 1: LIVRES, AUTEURS -->
                 <!-- ===================== -->
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -72,6 +78,82 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_below="@id/lblLivres"
+                                android:text="0"
+                                android:textSize="32sp"
+                                android:textStyle="bold"/>
+                        </RelativeLayout>
+                    </androidx.cardview.widget.CardView>
+
+                    <!-- AUTEURS -->
+                    <androidx.cardview.widget.CardView
+                        android:layout_width="0dp"
+                        android:layout_height="140dp"
+                        android:layout_weight="1"
+                        android:layout_margin="8dp"
+                        app:cardCornerRadius="12dp"
+                        app:cardElevation="4dp"
+                        android:backgroundTint="@android:color/white">
+
+                        <RelativeLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:padding="16dp">
+
+                            <TextView
+                                android:id="@+id/lblAuteurs"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Auteurs"
+                                android:textSize="16sp"/>
+
+                            <TextView
+                                android:id="@+id/txtCountAuteurs"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_below="@id/lblAuteurs"
+                                android:text="0"
+                                android:textSize="32sp"
+                                android:textStyle="bold"/>
+                        </RelativeLayout>
+                    </androidx.cardview.widget.CardView>
+
+                </LinearLayout>
+
+                <!-- ===================== -->
+                <!-- LIGNE 2: CATÉGORIES, MEMBRES -->
+                <!-- ===================== -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <!-- CATÉGORIES -->
+                    <androidx.cardview.widget.CardView
+                        android:layout_width="0dp"
+                        android:layout_height="140dp"
+                        android:layout_weight="1"
+                        android:layout_margin="8dp"
+                        app:cardCornerRadius="12dp"
+                        app:cardElevation="4dp"
+                        android:backgroundTint="@android:color/white">
+
+                        <RelativeLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:padding="16dp">
+
+                            <TextView
+                                android:id="@+id/lblCategories"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Catégories"
+                                android:textSize="16sp"/>
+
+                            <TextView
+                                android:id="@+id/txtCountCategories"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_below="@id/lblCategories"
                                 android:text="0"
                                 android:textSize="32sp"
                                 android:textStyle="bold"/>
@@ -113,7 +195,7 @@
                 </LinearLayout>
 
                 <!-- ===================== -->
-                <!-- LIGNE 2 -->
+                <!-- LIGNE 3: EMPRUNTS, RETARDS -->
                 <!-- ===================== -->
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -187,67 +269,97 @@
                 </LinearLayout>
 
                 <!-- ===================== -->
-                <!-- BOUTONS -->
+                <!-- LIGNE 4: MEMBRES ACTIFS -->
                 <!-- ===================== -->
-
-                <Button
-                    android:id="@+id/btnManageLivre"
+                <LinearLayout
                     android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <androidx.cardview.widget.CardView
+                        android:layout_width="0dp"
+                        android:layout_height="140dp"
+                        android:layout_weight="1"
+                        android:layout_margin="8dp"
+                        app:cardCornerRadius="12dp"
+                        app:cardElevation="4dp"
+                        android:backgroundTint="@android:color/white">
+
+                        <RelativeLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:padding="16dp">
+
+                            <TextView
+                                android:id="@+id/lblActifs"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Membres actifs"
+                                android:textSize="16sp" />
+
+                            <TextView
+                                android:id="@+id/txtCountActifs"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_below="@id/lblActifs"
+                                android:text="0"
+                                android:textSize="32sp"
+                                android:textStyle="bold" />
+                        </RelativeLayout>
+                    </androidx.cardview.widget.CardView>
+
+                    <!-- EMPTY CARD FOR SYMMETRY -->
+                    <androidx.cardview.widget.CardView
+                        android:layout_width="0dp"
+                        android:layout_height="140dp"
+                        android:layout_weight="1"
+                        android:layout_margin="8dp"
+                        android:visibility="invisible">
+                    </androidx.cardview.widget.CardView>
+                </LinearLayout>
+
+                <!-- ===================== -->
+                <!-- TOP LIVRES SECTION -->
+                <!-- ===================== -->
+                <TextView
+                    android:id="@+id/lblTopLivres"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="24dp"
-                    android:text="Gérer Livres"
-                    android:backgroundTint="@color/primary"
-                    android:textColor="@android:color/white"/>
+                    android:text="Livres les plus empruntés"
+                    android:textSize="18sp"
+                    android:textStyle="bold"/>
 
-                <Button
-                    android:id="@+id/btnManageMembres"
+                <TextView
+                    android:id="@+id/txtTopLivres"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="Gérer Membres"
-                    android:backgroundTint="@color/primary"
-                    android:textColor="@android:color/white"/>
+                    android:text=""
+                    android:textSize="16sp"
+                    android:paddingTop="8dp"/>
 
-                <Button
-                    android:id="@+id/btnManageCategories"
+                <!-- ===================== -->
+                <!-- TOP MEMBRES SECTION -->
+                <!-- ===================== -->
+                <TextView
+                    android:id="@+id/lblTopMembres"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:text="Membres les plus actifs"
+                    android:textSize="18sp"
+                    android:textStyle="bold"/>
+
+                <TextView
+                    android:id="@+id/txtTopMembres"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="Gérer Catégories"
-                    android:backgroundTint="@color/primary"
-                    android:textColor="@android:color/white"/>
-
-                <Button
-                    android:id="@+id/btnManageAuteurs"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="Gérer Auteurs"
-                    android:backgroundTint="@color/primary"
-                    android:textColor="@android:color/white"/>
-
-                <Button
-                    android:id="@+id/btnManageEmprunts"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="Gérer Emprunts"
-                    android:backgroundTint="@color/primary"
-                    android:textColor="@android:color/white"/>
+                    android:text=""
+                    android:textSize="16sp"
+                    android:paddingTop="8dp"/>
 
             </LinearLayout>
         </androidx.core.widget.NestedScrollView>
-
-        <!-- FAB -->
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fabAdd"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|end"
-            android:layout_margin="24dp"
-            android:src="@android:drawable/ic_input_add"
-            app:backgroundTint="@color/accent"
-            app:tint="@android:color/white"/>
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
@@ -256,10 +368,13 @@
     <!-- ===================== -->
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/navView"
-        android:layout_width="wrap_content"
+        android:layout_width="280dp"
         android:layout_height="match_parent"
         android:layout_gravity="start"
+        android:fitsSystemWindows="true"
         app:headerLayout="@layout/nav_header"
+        app:itemIconTint="@color/primary"
+        app:itemTextColor="@color/text_main"
         app:menu="@menu/drawer_menu"/>
 
 </androidx.drawerlayout.widget.DrawerLayout>

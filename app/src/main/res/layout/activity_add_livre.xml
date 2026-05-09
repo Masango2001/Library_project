@@ -13,73 +13,88 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Ajouter un Livre"
-            android:textSize="20sp"
+            android:textSize="22sp"
             android:textStyle="bold"
             android:layout_marginBottom="16dp"/>
 
+        <!-- TITRE -->
         <EditText
             android:id="@+id/edtTitre"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Titre"
-            android:inputType="textCapSentences"/>
+            android:inputType="textCapSentences"
+            android:layout_marginBottom="10dp"/>
 
+        <!-- ISBN -->
         <EditText
             android:id="@+id/edtIsbn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="ISBN"
-            android:inputType="text"/>
+            android:inputType="text"
+            android:layout_marginBottom="10dp"/>
 
+        <!-- ANNÉE -->
         <EditText
             android:id="@+id/edtAnnee"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Année de publication"
-            android:inputType="number"/>
+            android:inputType="number"
+            android:layout_marginBottom="10dp"/>
 
+        <!-- ÉDITEUR -->
         <EditText
             android:id="@+id/edtEditeur"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Editeur"
-            android:inputType="textCapWords"/>
+            android:hint="Éditeur"
+            android:inputType="textCapWords"
+            android:layout_marginBottom="10dp"/>
 
+        <!-- STOCK -->
         <EditText
             android:id="@+id/edtStock"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Quantité totale"
-            android:inputType="number"/>
+            android:inputType="number"
+            android:layout_marginBottom="12dp"/>
 
+        <!-- AUTEUR -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Auteur"
             android:layout_marginTop="8dp"/>
+
         <Spinner
             android:id="@+id/spinnerAuteur"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:minHeight="48dp"/>
+            android:layout_height="48dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="12dp"/>
 
+        <!-- CATÉGORIE -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Catégorie"
-            android:layout_marginTop="8dp"/>
+            android:text="Catégorie"/>
+
         <Spinner
             android:id="@+id/spinnerCategorie"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:minHeight="48dp"/>
+            android:layout_height="48dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="20dp"/>
 
+        <!-- BUTTON -->
         <Button
             android:id="@+id/btnSave"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Enregistrer"
-            android:layout_marginTop="24dp"/>
+            android:text="Enregistrer"/>
 
     </LinearLayout>
 </ScrollView>

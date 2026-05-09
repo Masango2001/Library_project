@@ -1,23 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="220dp"
+    android:layout_height="200dp"
     android:orientation="vertical"
     android:gravity="bottom|center_horizontal"
-    android:padding="24dp"
+    android:padding="20dp"
     android:background="@drawable/nav_header_background"
     android:theme="@style/ThemeOverlay.AppCompat.Dark">
 
     <!-- LOGO -->
     <ImageView
         android:id="@+id/imgLogo"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
-        android:layout_marginBottom="12dp"
+        android:layout_width="72dp"
+        android:layout_height="72dp"
+        android:layout_marginBottom="10dp"
         android:background="@drawable/circle_white"
-        android:padding="14dp"
+        android:padding="12dp"
         android:src="@drawable/ic_library"
-        android:scaleType="centerInside" />
+        android:scaleType="centerInside"
+        android:contentDescription="Logo application" />
 
     <!-- TITRE -->
     <TextView
@@ -26,7 +27,7 @@
         android:layout_height="wrap_content"
         android:text="Bibliothèque"
         android:textColor="@android:color/white"
-        android:textSize="22sp"
+        android:textSize="20sp"
         android:textStyle="bold" />
 
     <!-- SOUS-TITRE -->
@@ -34,7 +35,7 @@
         android:id="@+id/txtSubtitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
+        android:layout_marginTop="2dp"
         android:text="Système de gestion moderne"
         android:textColor="#D6EAF8"
         android:textSize="13sp" />

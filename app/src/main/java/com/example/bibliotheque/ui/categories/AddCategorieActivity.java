@@ -20,8 +20,10 @@ public class AddCategorieActivity extends AppCompatActivity {
     private EditText edtNom;
     private EditText edtDescription;
     private Button btnSave;
+
     private AppDatabase db;
     private ExecutorService executorService;
+
     private int categorieId = -1;
 
     @Override
@@ -35,23 +37,25 @@ public class AddCategorieActivity extends AppCompatActivity {
 
         db = AppDatabase.getInstance(this);
         executorService = Executors.newSingleThreadExecutor();
+
         loadEditMode();
 
         btnSave.setOnClickListener(v -> saveCategorie());
     }
 
     private void loadEditMode() {
-        if (!getIntent().hasExtra("id")) {
-            return;
-        }
+        if (!getIntent().hasExtra("id")) return;
 
         categorieId = getIntent().getIntExtra("id", -1);
+
         edtNom.setText(getIntent().getStringExtra("nom"));
         edtDescription.setText(getIntent().getStringExtra("description"));
-        setTitle("Modifier categorie");
+
+        setTitle("Modifier catégorie");
     }
 
     private void saveCategorie() {
+
         String nom = edtNom.getText().toString().trim();
         String description = edtDescription.getText().toString().trim();
 
@@ -61,27 +65,53 @@ public class AddCategorieActivity extends AppCompatActivity {
         }
 
         executorService.execute(() -> {
-            if (db.categorieDao().existsByNameExcludingId(nom, categorieId) > 0) {
-                runOnUiThread(() -> Toast.makeText(
-                        this,
-                        "Cette categorie existe deja",
-                        Toast.LENGTH_SHORT
-                ).show());
-                return;
-            }
 
-            Categorie categorie = new Categorie(nom, description);
-            if (categorieId == -1) {
-                db.categorieDao().insert(categorie);
-            } else {
-                categorie.setId(categorieId);
-                db.categorieDao().update(categorie);
-            }
+            try {
+                if (db.categorieDao().existsByNameExcludingId(nom, categorieId) > 0) {
+                    runOnUiThread(() ->
+                            Toast.makeText(
+                                    AddCategorieActivity.this,
+                                    "Cette catégorie existe déjà",
+                                    Toast.LENGTH_SHORT
+                            ).show()
+                    );
+                    return;
+                }
 
-            runOnUiThread(() -> {
-                Toast.makeText(this, "Categorie enregistree", Toast.LENGTH_SHORT).show();
-                finish();
-            });
+                Categorie categorie = new Categorie(nom, description);
+
+                if (categorieId == -1) {
+                    db.categorieDao().insert(categorie);
+                } else {
+                    categorie.setId(categorieId);
+                    db.categorieDao().update(categorie);
+                }
+
+                runOnUiThread(() -> {
+                    Toast.makeText(
+                            AddCategorieActivity.this,
+                            "Catégorie enregistrée",
+                            Toast.LENGTH_SHORT
+                    ).show();
+                    finish();
+                });
+
+            } catch (Exception e) {
+
+                runOnUiThread(() ->
+                        Toast.makeText(
+                                AddCategorieActivity.this,
+                                "Erreur lors de l'enregistrement",
+                                Toast.LENGTH_LONG
+                        ).show()
+                );
+            }
         });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        executorService.shutdown();
     }
 }

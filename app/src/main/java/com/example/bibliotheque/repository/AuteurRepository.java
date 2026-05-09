@@ -16,39 +16,74 @@ public class AuteurRepository {
 
     private final AuteurDao auteurDao;
     private final LiveData<List<Auteur>> allAuteurs;
-    private final ExecutorService executorService;
+
+    // Thread pool partagé (bon choix 👍)
+    private static final ExecutorService executorService =
+            Executors.newFixedThreadPool(4);
 
     public AuteurRepository(Application application) {
         AppDatabase database = AppDatabase.getInstance(application);
         auteurDao = database.auteurDao();
         allAuteurs = auteurDao.getAllAuteurs();
-        executorService = Executors.newFixedThreadPool(4);
     }
 
+    // ================= READ =================
     public LiveData<List<Auteur>> getAllAuteurs() {
         return allAuteurs;
     }
 
-    public void insert(Auteur auteur) {
-        executorService.execute(() -> auteurDao.insert(auteur));
-    }
-
-    public void update(Auteur auteur) {
-        executorService.execute(() -> auteurDao.update(auteur));
-    }
-
-    public void delete(Auteur auteur) {
-        executorService.execute(() -> auteurDao.delete(auteur));
-    }
-
     public LiveData<List<Auteur>> searchAuteurs(String query) {
-        return auteurDao.searchAuteurs(query);
+
+        if (query == null || query.trim().isEmpty()) {
+            return allAuteurs;
+        }
+
+        String safeQuery = "%" + query.trim() + "%";
+        return auteurDao.searchAuteurs(safeQuery);
     }
 
     public LiveData<Integer> countAuteurs() {
         return auteurDao.countAuteurs();
     }
 
+    // ================= WRITE =================
+    public void insert(Auteur auteur) {
+        if (auteur == null) return;
+
+        executorService.execute(() -> {
+            try {
+                auteurDao.insert(auteur);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    public void update(Auteur auteur) {
+        if (auteur == null) return;
+
+        executorService.execute(() -> {
+            try {
+                auteurDao.update(auteur);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    public void delete(Auteur auteur) {
+        if (auteur == null) return;
+
+        executorService.execute(() -> {
+            try {
+                auteurDao.delete(auteur);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    // 🔥 OPTION PRO (BONNE PRATIQUE)
     public void clear() {
         executorService.shutdown();
     }

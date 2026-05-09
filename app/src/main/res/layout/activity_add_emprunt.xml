@@ -13,32 +13,37 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Nouvel Emprunt"
-            android:textSize="20sp"
+            android:textSize="22sp"
             android:textStyle="bold"
             android:layout_marginBottom="16dp"/>
 
+        <!-- MEMBRE -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Membre"
             android:layout_marginTop="8dp"/>
+
         <Spinner
             android:id="@+id/spinnerMembre"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:minHeight="48dp"/>
+            android:layout_height="48dp"
+            android:layout_marginTop="4dp"/>
 
+        <!-- LIVRE -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Livre"
             android:layout_marginTop="16dp"/>
+
         <Spinner
             android:id="@+id/spinnerLivre"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:minHeight="48dp"/>
+            android:layout_height="48dp"
+            android:layout_marginTop="4dp"/>
 
+        <!-- DATE RETOUR -->
         <TextView
             android:id="@+id/txtDateRetour"
             android:layout_width="wrap_content"
@@ -47,11 +52,12 @@
             android:layout_marginTop="24dp"
             android:textStyle="italic"/>
 
+        <!-- BUTTON -->
         <Button
             android:id="@+id/btnSave"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Enregistrer l'Emprunt"
+            android:text="Enregistrer l'emprunt"
             android:layout_marginTop="32dp"/>
 
     </LinearLayout>

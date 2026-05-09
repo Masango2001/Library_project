@@ -2,6 +2,7 @@ package com.example.bibliotheque.ui.membres;
 
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Patterns;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -23,15 +24,13 @@ import java.util.concurrent.Executors;
 
 public class AddMembreActivity extends AppCompatActivity {
 
-    private EditText edtNom;
-    private EditText edtPrenom;
-    private EditText edtEmail;
-    private EditText edtTelephone;
-    private EditText edtAdresse;
+    private EditText edtNom, edtPrenom, edtEmail, edtTelephone, edtAdresse;
     private Spinner spinnerStatut;
     private Button btnSave;
+
     private AppDatabase db;
     private ExecutorService executorService;
+
     private int membreId = -1;
     private String dateInscriptionExistante;
 
@@ -62,36 +61,41 @@ public class AddMembreActivity extends AppCompatActivity {
                 LibraryConstants.STATUT_MEMBRE_ACTIF,
                 LibraryConstants.STATUT_MEMBRE_SUSPENDU
         };
+
         ArrayAdapter<String> adapter = new ArrayAdapter<>(
                 this,
                 android.R.layout.simple_spinner_dropdown_item,
                 statuts
         );
+
         spinnerStatut.setAdapter(adapter);
     }
 
     private void loadEditMode() {
-        if (!getIntent().hasExtra("id")) {
-            return;
-        }
+        if (getIntent() == null || !getIntent().hasExtra("id")) return;
 
         membreId = getIntent().getIntExtra("id", -1);
+
         edtNom.setText(getIntent().getStringExtra("nom"));
         edtPrenom.setText(getIntent().getStringExtra("prenom"));
         edtEmail.setText(getIntent().getStringExtra("email"));
         edtTelephone.setText(getIntent().getStringExtra("telephone"));
         edtAdresse.setText(getIntent().getStringExtra("adresse"));
+
         dateInscriptionExistante = getIntent().getStringExtra("date_inscription");
 
         String statut = getIntent().getStringExtra("statut");
         if (LibraryConstants.STATUT_MEMBRE_SUSPENDU.equals(statut)) {
             spinnerStatut.setSelection(1);
+        } else {
+            spinnerStatut.setSelection(0);
         }
 
         setTitle("Modifier membre");
     }
 
     private void saveMembre() {
+
         String nom = edtNom.getText().toString().trim();
         String prenom = edtPrenom.getText().toString().trim();
         String email = edtEmail.getText().toString().trim();
@@ -100,24 +104,32 @@ public class AddMembreActivity extends AppCompatActivity {
         String statut = spinnerStatut.getSelectedItem().toString();
 
         if (TextUtils.isEmpty(nom) || TextUtils.isEmpty(prenom) || TextUtils.isEmpty(email)) {
-            Toast.makeText(this, "Nom, prenom et email sont obligatoires", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Nom, prénom et email sont obligatoires", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        String dateInscription = dateInscriptionExistante;
-        if (TextUtils.isEmpty(dateInscription)) {
-            dateInscription = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-                    .format(new Date());
+        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            Toast.makeText(this, "Email invalide", Toast.LENGTH_SHORT).show();
+            return;
         }
 
+        if (!TextUtils.isEmpty(telephone) && !Patterns.PHONE.matcher(telephone).matches()) {
+            Toast.makeText(this, "Téléphone invalide", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String dateInscription = (dateInscriptionExistante == null)
+                ? new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(new Date())
+                : dateInscriptionExistante;
+
         String finalDateInscription = dateInscription;
+
         executorService.execute(() -> {
+
             if (db.membreDao().countByEmailExcludingId(email, membreId) > 0) {
-                runOnUiThread(() -> Toast.makeText(
-                        this,
-                        "Cet email est deja utilise",
-                        Toast.LENGTH_SHORT
-                ).show());
+                runOnUiThread(() ->
+                        Toast.makeText(this, "Cet email est déjà utilisé", Toast.LENGTH_SHORT).show()
+                );
                 return;
             }
 
@@ -139,7 +151,7 @@ public class AddMembreActivity extends AppCompatActivity {
             }
 
             runOnUiThread(() -> {
-                Toast.makeText(this, "Membre enregistre", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Membre enregistré", Toast.LENGTH_SHORT).show();
                 finish();
             });
         });

@@ -3,9 +3,13 @@ package com.example.bibliotheque.entities;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.Ignore;
+import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
-@Entity(tableName = "membres")
+@Entity(
+        tableName = "membres",
+        indices = {@Index(value = "email", unique = true)}
+)
 public class Membre {
 
     @PrimaryKey(autoGenerate = true)
