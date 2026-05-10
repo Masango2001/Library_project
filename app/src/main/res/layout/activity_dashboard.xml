@@ -70,7 +70,7 @@
                                 android:id="@+id/lblLivres"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Livres"
+                                android:text="Books"
                                 android:textSize="16sp"/>
 
                             <TextView
@@ -103,7 +103,7 @@
                                 android:id="@+id/lblAuteurs"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Auteurs"
+                                android:text="Authors"
                                 android:textSize="16sp"/>
 
                             <TextView
@@ -146,7 +146,7 @@
                                 android:id="@+id/lblCategories"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Catégories"
+                                android:text="Categories"
                                 android:textSize="16sp"/>
 
                             <TextView
@@ -179,7 +179,7 @@
                                 android:id="@+id/lblMembres"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Membres"/>
+                                android:text="Members"/>
 
                             <TextView
                                 android:id="@+id/txtCountMembres"
@@ -221,7 +221,7 @@
                                 android:id="@+id/lblEmprunts"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Emprunts"/>
+                                android:text="Loans"/>
 
                             <TextView
                                 android:id="@+id/txtCountEmprunts"
@@ -253,7 +253,7 @@
                                 android:id="@+id/lblRetards"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Retards"/>
+                                android:text="Overdue"/>
 
                             <TextView
                                 android:id="@+id/txtCountRetards"
@@ -294,7 +294,7 @@
                                 android:id="@+id/lblActifs"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Membres actifs"
+                                android:text="Active members"
                                 android:textSize="16sp" />
 
                             <TextView
@@ -326,7 +326,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="24dp"
-                    android:text="Livres les plus empruntés"
+                    android:text="Top borrowed books"
                     android:textSize="18sp"
                     android:textStyle="bold"/>
 
@@ -346,7 +346,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="24dp"
-                    android:text="Membres les plus actifs"
+                    android:text="Most active members"
                     android:textSize="18sp"
                     android:textStyle="bold"/>
 

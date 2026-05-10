@@ -50,6 +50,7 @@ public class DashboardActivity extends AppCompatActivity {
     private CategorieRepository categorieRepository;
     private MembreRepository membreRepository;
     private EmpruntRepository empruntRepository;
+    private LiveData<List<TopMembreStat>> topMembresLiveData;
 
 
 
@@ -155,17 +156,54 @@ public class DashboardActivity extends AppCompatActivity {
 
     private void setupDashboard() {
 
-        toolbar.setTitle("Tableau de bord");
+        toolbar.setTitle("Dashboard");
 
         empruntRepository.updateRetards(System.currentTimeMillis());
+
+        livreRepository.countLivres().observe(this,
+                value -> setText(R.id.txtCountLivres, value));
+
+        auteurRepository.countAuteurs().observe(this,
+                value -> setText(R.id.txtCountAuteurs, value));
+
+        categorieRepository.countCategories().observe(this,
+                value -> setText(R.id.txtCountCategories, value));
+
+        membreRepository.countAll().observe(this,
+                value -> setText(R.id.txtCountMembres, value));
+
+        empruntRepository.getTotalEmprunts().observe(this,
+                value -> setText(R.id.txtCountEmprunts, value));
+
+        empruntRepository.getEmpruntsEnRetard().observe(this,
+                value -> setText(R.id.txtCountRetards, value));
+
+        membreRepository.countMembresActifs().observe(this,
+                value -> setText(R.id.txtCountActifs, value));
 
         empruntRepository.getTopLivres(LibraryConstants.DASHBOARD_TOP_LIMIT)
                 .observe(this,
                         stats -> setText(R.id.txtTopLivres, formatTopLivres(stats)));
 
-        empruntRepository.getTopMembres(LibraryConstants.DASHBOARD_TOP_LIMIT)
-                .observe(this,
-                        stats -> setText(R.id.txtTopMembres, formatTopMembres(stats)));
+        topMembresLiveData = empruntRepository.getTopMembres(LibraryConstants.DASHBOARD_TOP_LIMIT);
+        topMembresLiveData.observe(this,
+                stats -> setText(R.id.txtTopMembres, formatTopMembres(stats)));
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        refreshDashboard();
+    }
+
+    private void refreshDashboard() {
+        empruntRepository.updateRetards(System.currentTimeMillis());
+
+        if (topMembresLiveData != null) {
+            topMembresLiveData.removeObservers(this);
+            topMembresLiveData.observe(this,
+                    stats -> setText(R.id.txtTopMembres, formatTopMembres(stats)));
+        }
     }
 
     private void setText(int id, Object value) {
@@ -177,7 +215,7 @@ public class DashboardActivity extends AppCompatActivity {
 
     private String formatTopLivres(List<TopLivreStat> stats) {
         if (stats == null || stats.isEmpty())
-            return "Aucun emprunt enregistré";
+            return "No loans recorded";
 
         StringBuilder builder = new StringBuilder();
 
@@ -196,7 +234,7 @@ public class DashboardActivity extends AppCompatActivity {
 
     private String formatTopMembres(List<TopMembreStat> stats) {
         if (stats == null || stats.isEmpty())
-            return "Aucun membre actif";
+            return "No active members";
 
         StringBuilder builder = new StringBuilder();
 

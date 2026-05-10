@@ -69,4 +69,12 @@ public class EmpruntRepository {
     public LiveData<List<TopMembreStat>> getTopMembres(int limit) {
         return empruntDao.getTopMembres(limit);
     }
+
+    public LiveData<Integer> getTotalEmprunts() {
+        return empruntDao.getTotalEmprunts();
+    }
+
+    public LiveData<Integer> getEmpruntsEnRetard() {
+        return empruntDao.getEmpruntsEnRetard();
+    }
 }

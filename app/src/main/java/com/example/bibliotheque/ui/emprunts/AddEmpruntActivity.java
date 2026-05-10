@@ -1,8 +1,10 @@
 package com.example.bibliotheque.ui.emprunts;
 
+import android.app.DatePickerDialog;
 import android.os.Bundle;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -20,6 +22,7 @@ import com.example.bibliotheque.util.DateUtils;
 import com.example.bibliotheque.util.LibraryConstants;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -30,6 +33,7 @@ public class AddEmpruntActivity extends AppCompatActivity {
     private Spinner spinnerLivre;
     private TextView txtDateRetour;
     private Button btnSave;
+    private long selectedReturnDate;
 
     private MembreRepository membreRepository;
     private LivreRepository livreRepository;
@@ -63,7 +67,10 @@ public class AddEmpruntActivity extends AppCompatActivity {
                 LibraryConstants.DUREE_EMPRUNT_JOURS
         );
 
-        txtDateRetour.setText("Date de retour prévue : " + DateUtils.formatDate(retour));
+        selectedReturnDate = retour;
+        setReturnDateText(selectedReturnDate);
+        txtDateRetour.setClickable(true);
+        txtDateRetour.setOnClickListener(v -> showDatePicker());
 
         loadSpinners();
 
@@ -131,7 +138,7 @@ public class AddEmpruntActivity extends AppCompatActivity {
     private void saveEmprunt() {
 
         if (membreList.isEmpty() || livreList.isEmpty()) {
-            Toast.makeText(this, "Chargement en cours...", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Loading data...", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -139,7 +146,7 @@ public class AddEmpruntActivity extends AppCompatActivity {
         int livrePos = spinnerLivre.getSelectedItemPosition();
 
         if (membrePos < 0 || livrePos < 0) {
-            Toast.makeText(this, "Sélection invalide", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Invalid selection", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -147,17 +154,22 @@ public class AddEmpruntActivity extends AppCompatActivity {
         Livre livre = livreList.get(livrePos);
 
         if (!LibraryConstants.STATUT_MEMBRE_ACTIF.equalsIgnoreCase(membre.getStatut())) {
-            Toast.makeText(this, "Membre non autorisé à emprunter", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Member is not allowed to borrow", Toast.LENGTH_SHORT).show();
             return;
         }
 
         if (livre.getQuantiteDisponible() <= 0) {
-            Toast.makeText(this, "Livre indisponible", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Book is unavailable", Toast.LENGTH_SHORT).show();
             return;
         }
 
         long now = System.currentTimeMillis();
-        long retour = DateUtils.addDays(now, LibraryConstants.DUREE_EMPRUNT_JOURS);
+        if (selectedReturnDate <= now) {
+            Toast.makeText(this, "Please choose a future return date", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        long retour = selectedReturnDate;
 
         executorService.execute(() -> {
 
@@ -181,15 +193,44 @@ public class AddEmpruntActivity extends AppCompatActivity {
                 });
 
                 runOnUiThread(() -> {
-                    Toast.makeText(this, "Emprunt enregistré", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Loan saved", Toast.LENGTH_SHORT).show();
                     finish();
                 });
 
             } catch (Exception e) {
                 runOnUiThread(() ->
-                        Toast.makeText(this, "Erreur lors de l'emprunt", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, "Error while saving loan", Toast.LENGTH_SHORT).show()
                 );
             }
         });
+    }
+
+    private void showDatePicker() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(selectedReturnDate);
+
+        new DatePickerDialog(
+                this,
+                (view, year, month, dayOfMonth) -> {
+                    Calendar selected = Calendar.getInstance();
+                    selected.set(year, month, dayOfMonth, 0, 0, 0);
+                    selected.set(Calendar.MILLISECOND, 0);
+
+                    if (selected.getTimeInMillis() <= System.currentTimeMillis()) {
+                        Toast.makeText(this, "Please select a future return date", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    selectedReturnDate = selected.getTimeInMillis();
+                    setReturnDateText(selectedReturnDate);
+                },
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH)
+        ).show();
+    }
+
+    private void setReturnDateText(long dateMillis) {
+        txtDateRetour.setText("Return date: " + DateUtils.formatDate(dateMillis));
     }
 }
